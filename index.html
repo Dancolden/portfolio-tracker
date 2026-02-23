@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Investment Club · Portfolio Tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
 
@@ -184,8 +185,7 @@
   .ptog[data-key="nasdaq"].active{color:#a78bfa;border-color:#a78bfa44;}
   .ptog[data-key="dji"].active{color:#ffd166;border-color:#ffd16644;}
   .ptog[data-key="rut"].active{color:#f97316;border-color:#f9731644;}
-  .ptog[data-key="spy"].active{color:#60a5fa;border-color:#60a5fa44;}
-  .ptog[data-key="qqq"].active{color:#f472b6;border-color:#f472b644;}
+
 
   @media(max-width:900px){.charts-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}.dash-lower{grid-template-columns:1fr!important}}
   ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
@@ -255,8 +255,7 @@
           <button class="ptog active" data-key="nasdaq"    onclick="toggleLine(this)">Nasdaq</button>
           <button class="ptog active" data-key="dji"       onclick="toggleLine(this)">Dow Jones</button>
           <button class="ptog active" data-key="rut"       onclick="toggleLine(this)">Russell 2000</button>
-          <button class="ptog active" data-key="spy"       onclick="toggleLine(this)">SPY ETF</button>
-          <button class="ptog active" data-key="qqq"       onclick="toggleLine(this)">QQQ ETF</button>
+
         </div>
       </div>
       <canvas id="c-perf" height="340" style="width:100%;height:340px;max-height:340px;display:block;"></canvas>
@@ -633,8 +632,6 @@ const SERIES_CFG = {
   nasdaq:    {label:'Nasdaq',         color:'#a78bfa', width:1.5},
   dji:       {label:'Dow Jones',      color:'#ffd166', width:1.5},
   rut:       {label:'Russell 2000',   color:'#f97316', width:1.5},
-  spy:       {label:'SPY ETF',        color:'#60a5fa', width:1.5},
-  qqq:       {label:'QQQ ETF',        color:'#f472b6', width:1.5},
 };
 let activeLines = new Set(Object.keys(SERIES_CFG));
 
@@ -753,11 +750,29 @@ function renderDash() {
   const sm = sectorMap(), labs = Object.keys(sm), vals = Object.values(sm), cols = labs.map(sc);
   const ctx1 = document.getElementById('c-sector').getContext('2d');
   if(CH.sec) CH.sec.destroy();
+  const total = vals.reduce((a,b)=>a+b,0);
   CH.sec = new Chart(ctx1,{type:'doughnut',
     data:{labels:labs,datasets:[{data:vals,backgroundColor:cols.map(c=>c+'cc'),borderColor:cols,borderWidth:1.5,hoverOffset:8}]},
-    options:{responsive:false,maintainAspectRatio:false,cutout:'65%',
-      plugins:{legend:{position:'right',labels:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:11},padding:16,boxWidth:12,usePointStyle:true}},
-        tooltip:{callbacks:{label:c=>` ${c.label}: $${f$(c.raw,0)} (${(c.raw/vals.reduce((a,b)=>a+b,0)*100).toFixed(1)}%)`}}}}});
+    options:{responsive:false,maintainAspectRatio:false,cutout:'58%',
+      plugins:{
+        legend:{position:'right',labels:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:11},padding:16,boxWidth:12,usePointStyle:true}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: $${f$(c.raw,0)} (${(c.raw/total*100).toFixed(1)}%)`}},
+        datalabels:{
+          color:'#fff',
+          font:{family:"'JetBrains Mono',monospace",size:11,weight:'700'},
+          formatter:(value,ctx)=>{
+            const pct = (value/total*100);
+            return pct < 4 ? '' : pct.toFixed(1)+'%';
+          },
+          anchor:'center',
+          align:'center',
+          textShadowBlur:4,
+          textShadowColor:'rgba(0,0,0,0.8)',
+        }
+      }
+    },
+    plugins:[ChartDataLabels]
+  });
 
   // Performance comparison line chart
   buildPerfChart();
