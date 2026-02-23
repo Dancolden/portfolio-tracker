@@ -240,9 +240,9 @@
       <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Total Portfolio Value</div><div class="kpi-value" id="kv-total">—</div><div class="kpi-sub" id="ks-total">Fetching…</div></div>
       <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Total P&amp;L</div><div class="kpi-value" id="kv-pnl">—</div><div class="kpi-sub" id="ks-pnl">Since purchase</div></div>
       <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Live Positions</div><div class="kpi-value" id="kv-cnt">—</div><div class="kpi-sub">Successfully priced</div></div>
-      <div class="kpi-card" style="--accent-line:#ffd166"><div class="kpi-label">Portfolio Beta</div><div class="kpi-value neu">0.999</div><div class="kpi-sub">vs S&amp;P 500</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-value pos">0.941</div><div class="kpi-sub">Risk-adjusted return</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Alpha</div><div class="kpi-value pos">0.40%</div><div class="kpi-sub">Excess return</div></div>
+      <div class="kpi-card" style="--accent-line:#ffd166"><div class="kpi-label">Portfolio Beta</div><div class="kpi-value neu" id="kv-beta">—</div><div class="kpi-sub" id="ks-beta">vs S&amp;P 500</div></div>
+      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-value pos" id="kv-sharpe">—</div><div class="kpi-sub">Annualised · risk-free 4.3%</div></div>
+      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Alpha</div><div class="kpi-value pos" id="kv-alpha">—</div><div class="kpi-sub" id="ks-alpha">vs S&amp;P 500 · annualised</div></div>
     </div>
 
     <!-- Performance vs Indexes — full width -->
@@ -612,6 +612,84 @@ function showPage(name, btn) {
   if (name==='analytics') renderAnalytics();
 }
 
+
+// ─────────────────────────────────────────────────────────────
+// RISK METRICS  — exact replication of spreadsheet formulas
+// Beta & Alpha : SLOPE/INTERCEPT on monthly portfolio vs S&P returns
+// Sharpe       : (avg daily return - daily rf) / STDEV.P(daily) * sqrt(252)
+// Risk-free    : 5% annual → 0.0001984/day (5/252), matching spreadsheet
+// ─────────────────────────────────────────────────────────────
+function computeRiskMetrics() {
+  const DAILY_RF = 0.05 / 252; // matches spreadsheet L26
+
+  // ── 1. Daily returns from PERF_DATA (for Sharpe) ──
+  const dailyPort = [];
+  for (let i = 1; i < PERF_DATA.length; i++) {
+    const p = PERF_DATA[i], prev = PERF_DATA[i-1];
+    if (p.portfolio && prev.portfolio)
+      dailyPort.push(p.portfolio / prev.portfolio - 1);
+  }
+
+  // ── 2. Monthly returns from PERF_DATA (for Beta & Alpha) ──
+  // Group by YYYY-MM, take last point of each month
+  const byMonth = {};
+  PERF_DATA.forEach(d => {
+    if (d.portfolio && d.spx) byMonth[d.date.slice(0,7)] = d;
+  });
+  const months = Object.keys(byMonth).sort();
+  const portM = [], spxM = [];
+  for (let i = 1; i < months.length; i++) {
+    const cur  = byMonth[months[i]];
+    const prev = byMonth[months[i-1]];
+    if (cur.portfolio && prev.portfolio && cur.spx && prev.spx) {
+      portM.push(cur.portfolio / prev.portfolio - 1);
+      spxM.push(cur.spx       / prev.spx        - 1);
+    }
+  }
+
+  if (portM.length < 6 || dailyPort.length < 20) return null;
+  const n = portM.length;
+
+  const mean = arr => arr.reduce((a,b) => a+b, 0) / arr.length;
+  const pm = mean(portM), sm = mean(spxM);
+
+  // SLOPE = Cov(port,spx) / Var(spx)  [sample, n-1]
+  const cov = portM.reduce((s,r,i) => s + (r-pm)*(spxM[i]-sm), 0) / (n-1);
+  const varS = spxM.reduce((s,r)    => s + (r-sm)**2,           0) / (n-1);
+  const beta  = cov / varS;
+
+  // INTERCEPT = mean(port) - beta * mean(spx)
+  const alpha = pm - beta * sm;
+
+  // Sharpe = (mean(daily) - daily_rf) / STDEV.P(daily) * sqrt(252)
+  const dp = mean(dailyPort);
+  const stdP = Math.sqrt(dailyPort.reduce((s,r) => s+(r-dp)**2, 0) / dailyPort.length); // population stdev
+  const sharpe = (dp - DAILY_RF) / stdP * Math.sqrt(252);
+
+  return { beta, alpha, sharpe, n, nd: dailyPort.length };
+}
+
+function updateRiskKPIs() {
+  const m = computeRiskMetrics();
+  if (!m) return;
+
+  const betaEl = document.getElementById('kv-beta');
+  betaEl.textContent = m.beta.toFixed(4);
+  betaEl.className = 'kpi-value ' + (m.beta > 1.15 ? 'neg' : m.beta < 0.85 ? 'pos' : 'neu');
+  document.getElementById('ks-beta').textContent = `vs S&P 500 · ${m.n} monthly obs`;
+
+  const sharpeEl = document.getElementById('kv-sharpe');
+  sharpeEl.textContent = m.sharpe.toFixed(4);
+  sharpeEl.className = 'kpi-value ' + (m.sharpe >= 1 ? 'pos' : m.sharpe >= 0 ? 'neu' : 'neg');
+
+  const alphaEl = document.getElementById('kv-alpha');
+  const alphaPct = (m.alpha * 100).toFixed(3);
+  alphaEl.textContent = (m.alpha >= 0 ? '+' : '') + alphaPct + '%';
+  alphaEl.className = 'kpi-value ' + (m.alpha >= 0 ? 'pos' : 'neg');
+  document.getElementById('ks-alpha').textContent = `vs S&P 500 · monthly intercept`;
+}
+
+
 // ─────────────────────────────────────────────────────────────
 // DASHBOARD
 // ─────────────────────────────────────────────────────────────
@@ -745,6 +823,9 @@ function renderDash() {
   document.getElementById('kv-cnt').textContent   = priced;
   const at = document.getElementById('a-total');
   if(at) at.textContent = tot>0 ? '$'+f$(tot/1e6,2)+'M' : '—';
+
+  // Live risk metrics from historical data
+  updateRiskKPIs();
 
   // Sector doughnut
   const sm = sectorMap(), labs = Object.keys(sm), vals = Object.values(sm), cols = labs.map(sc);
