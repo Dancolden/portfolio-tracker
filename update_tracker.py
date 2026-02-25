@@ -32,7 +32,7 @@ except ImportError:
     sys.exit(1)
 
 # ── Config ────────────────────────────────────────────────────────────────────
-XLSX_FILE = "Live_Updating_Investment_Club_Portfolio_Tracker.xlsx"
+XLSX_FILE = "Live Updating Investment Club Portfolio Tracker.xlsx"
 HTML_FILE = "index.html"
 # ─────────────────────────────────────────────────────────────────────────────
 
