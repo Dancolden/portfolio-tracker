@@ -919,9 +919,9 @@ function buildPerfChart() {
           borderWidth: 1,
           titleColor: '#6b7a92',
           bodyColor: '#e8edf5',
-          titleFont: { family: "'JetBrains Mono',monospace", size: 11 },
-          bodyFont:  { family: "'JetBrains Mono',monospace", size: 11 },
-          padding: 12,
+          titleFont: { family: "'JetBrains Mono',monospace", size: 14 },
+          bodyFont:  { family: "'JetBrains Mono',monospace", size: 14 },
+          padding: 16,
           callbacks: {
             title: items => items[0].label,
             label: item => {
@@ -936,12 +936,12 @@ function buildPerfChart() {
       },
       scales: {
         x: {
-          ticks: { color:'#6b7a92', font:{family:"'JetBrains Mono',monospace",size:11}, maxRotation:0, autoSkip:true, maxTicksLimit:18 },
+          ticks: { color:'#6b7a92', font:{family:"'JetBrains Mono',monospace",size:16}, maxRotation:0, autoSkip:true, maxTicksLimit:18 },
           grid: { color:'#1a1f2744' },
           border: { color:'#232a35' },
         },
         y: {
-          ticks: { color:'#6b7a92', font:{family:"'JetBrains Mono',monospace",size:12}, callback: v => v.toFixed(0) },
+          ticks: { color:'#6b7a92', font:{family:"'JetBrains Mono',monospace",size:16}, callback: v => v.toFixed(0) },
           grid: { color:'#1a1f2744' },
           border: { color:'#232a35' },
         }
