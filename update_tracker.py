@@ -181,6 +181,8 @@ def extract_transactions(wb):
                                       'new': shares, 'price': price})
             prev_shares[ticker] = shares
 
+    # Exclude inception positions (May 13 2024 = legacy holdings, not club transactions)
+    transactions = [t for t in transactions if t['date'] != '2024-05-13']
     transactions.sort(key=lambda x: x['date'], reverse=True)
     print(f"  Transactions: {len(transactions)} ({sum(1 for t in transactions if t['action']=='BUY')} buys, "
           f"{sum(1 for t in transactions if t['action']=='SELL')} sells)")
