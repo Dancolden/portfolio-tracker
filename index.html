@@ -35,11 +35,11 @@
     animation:pulse-glow 3s ease-in-out infinite;}
   @keyframes pulse-glow{0%,100%{filter:drop-shadow(0 0 0 rgba(0,229,176,0))}50%{filter:drop-shadow(0 0 10px rgba(0,229,176,0.7))}}
   .logo-text{font-size:18px;font-weight:800;letter-spacing:-0.5px;}
-  .logo-sub{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+  .logo-sub{font-size:11px;font-family:'JetBrains Mono`,monospace;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
   .header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
 
   .status-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid;
-    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:0.5px;
+    font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:0.5px;
     text-transform:uppercase;transition:all 0.3s;}
   .status-badge.loading{border-color:var(--neutral);color:var(--neutral);background:rgba(255,209,102,0.08);}
   .status-badge.live{border-color:var(--accent);color:var(--accent);background:rgba(0,229,176,0.08);}
@@ -51,7 +51,7 @@
   .status-badge.error .status-dot{background:var(--negative);}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
 
-  .last-updated{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+  .last-updated{font-family:`JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
 
   .btn-refresh{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 14px;
     color:var(--text);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;
@@ -64,7 +64,7 @@
 
   .nav-tabs{display:flex;gap:4px;background:var(--surface);border-radius:10px;padding:4px;border:1px solid var(--border);}
   .nav-tab{padding:8px 16px;border-radius:8px;border:none;background:transparent;color:var(--muted);
-    font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+    font-family:'Syne`,sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
   .nav-tab.active{background:var(--accent);color:#000;}
   .nav-tab:hover:not(.active){color:var(--text);background:var(--surface2);}
 
@@ -74,8 +74,8 @@
   .loading-overlay.hidden{display:none;}
   .loader-ring{width:52px;height:52px;border:3px solid var(--border);border-top-color:var(--accent);
     border-radius:50%;animation:spin 0.9s linear infinite;}
-  .loader-label{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);}
-  .loader-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;}
+  .loader-label{font-family:var(--mono);font-size:13px;color:var(--muted);}
+  .loader-sub{font-family:`JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1px;}
   .loader-track{width:260px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
   .loader-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s ease;width:0%;}
 
@@ -89,15 +89,15 @@
     position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s;}
   .kpi-card:hover{border-color:rgba(0,229,176,0.3);transform:translateY(-2px);}
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-line,var(--accent));opacity:0.7;}
-  .kpi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+  .kpi-label{font-family:'JetBrains Mono`,monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
   .kpi-value{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:6px;}
-  .kpi-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .kpi-sub{font-family:var(--mono);font-size:11px;color:var(--muted);}
 
   .pos{color:var(--positive);}.neg{color:var(--negative);}.neu{color:var(--neutral);}
 
   .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
   .section-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:10px;}
-  .section-title::before{content:'';display:inline-block;width:4px;height:20px;background:var(--accent);border-radius:2px;}
+  .section-title::before{content:`';display:inline-block;width:4px;height:20px;background:var(--accent);border-radius:2px;}
 
   /* Table */
   .table-wrapper{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
@@ -107,15 +107,15 @@
   .search-box:focus{border-color:var(--accent);}
   .search-box::placeholder{color:var(--muted);}
   .filter-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;
-    color:var(--muted);font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+    color:var(--muted);font-family:'Syne`,sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
   .filter-btn.active,.filter-btn:hover{background:rgba(0,229,176,0.1);border-color:rgba(0,229,176,0.3);color:var(--accent);}
 
   table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{padding:12px 14px;text-align:left;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;
+  th{padding:12px 14px;text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:1.5px;
     text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);
     cursor:pointer;user-select:none;white-space:nowrap;}
   th:hover{color:var(--accent);}
-  td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,0.03);font-family:'JetBrains Mono',monospace;vertical-align:middle;}
+  td{padding:13px 14px;border-bottom:1px solid rgba(255,255,255,0.03);font-family:`JetBrains Mono',monospace;vertical-align:middle;}
   tr:last-child td{border-bottom:none;}
   tr:hover td{background:rgba(255,255,255,0.025);}
   .ticker-cell{font-weight:700;font-size:14px;color:var(--accent);}
@@ -149,7 +149,7 @@
     border-radius: 5px;
     padding: 3px 9px;
     font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono`, monospace;
     cursor: pointer;
     transition: all 0.15s;
     letter-spacing: 0.03em;
@@ -161,39 +161,39 @@
   .form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;}
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
   .form-group{display:flex;flex-direction:column;gap:6px;}
-  label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+  label{font-family:var(--mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
   input,select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;
-    color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color 0.2s;width:100%;}
+    color:var(--text);font-family:`JetBrains Mono',monospace;font-size:13px;outline:none;transition:border-color 0.2s;width:100%;}
   input:focus,select:focus{border-color:var(--accent);}
   select option{background:var(--surface2);}
   .btn-add{background:var(--accent);color:#000;border:none;border-radius:10px;padding:12px 28px;
-    font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    font-family:'Syne`,sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
   .btn-add:hover{background:#00ffca;transform:translateY(-1px);box-shadow:0 8px 20px rgba(0,229,176,0.3);}
   .btn-add:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
   .btn-rm{background:rgba(255,107,107,0.1);color:var(--negative);border:1px solid rgba(255,107,107,0.2);
-    border-radius:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+    border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:all 0.2s;}
   .btn-rm:hover{background:rgba(255,107,107,0.22);border-color:var(--negative);}
 
   .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
   .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;text-align:center;}
   .metric-value{font-size:32px;font-weight:800;letter-spacing:-1.5px;margin:8px 0;}
-  .metric-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+  .metric-label{font-family:`JetBrains Mono`,monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
 
   .warn-bar{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.25);border-radius:10px;
-    padding:12px 18px;margin-bottom:20px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--negative);
+    padding:12px 18px;margin-bottom:20px;font-family:var(--mono);font-size:12px;color:var(--negative);
     display:none;line-height:1.7;}
 
   .toast{position:fixed;bottom:32px;right:32px;background:var(--surface);border:1px solid var(--accent);
-    border-radius:12px;padding:14px 22px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;
+    border-radius:12px;padding:14px 22px;color:var(--text);font-family:`JetBrains Mono`,monospace;font-size:13px;
     z-index:999;display:none;animation:slideUp 0.3s ease;max-width:360px;}
   @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
 
-  .empty{text-align:center;padding:48px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .empty{text-align:center;padding:48px;color:var(--muted);font-family:var(--mono);font-size:13px;}
   .ox{overflow-x:auto;}
   canvas{max-width:100% !important;display:block;}
 
   .ptog{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 11px;
-    font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;}
+    font-family:`JetBrains Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;}
   .ptog.active{color:var(--text);border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.06);}
   .ptog[data-key="portfolio"].active{color:#00e5b0;border-color:#00e5b044;background:rgba(0,229,176,0.1);}
   .ptog[data-key="spx"].active{color:#4ecdc4;border-color:#4ecdc444;}
@@ -242,69 +242,69 @@
           <button class="nav-tab" onclick="showPage('holdings',this)">Holdings</button>
           <button class="nav-tab" onclick="showPage('analytics',this)">Analytics</button>
           <button class="nav-tab" onclick="showPage('transactions',this)">Transactions</button>
-          <button class="nav-tab" onclick="showPage('manage',this)">Manage</button>
+          <button class="nav-tab" onclick="showPage('manage`,this)\">Manage</button>
         </div>
       </div>
     </div>
   </div>
 </header>
 
-<div class="container">
-  <div class="warn-bar" id="wb"></div>
+<div class=\"container\">
+  <div class=\"warn-bar\" id=\"wb\"></div>
 
   <!-- DASHBOARD -->
-  <div id="page-dashboard" class="page active">
-    <div class="kpi-grid">
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Total Portfolio Value</div><div class="kpi-value" id="kv-total">—</div><div class="kpi-sub" id="ks-total">Fetching…</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">P&amp;L (Current Positions)</div><div class="kpi-value" id="kv-pnl">—</div><div class="kpi-sub" id="ks-pnl">Unrealised · current holdings</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Live Positions</div><div class="kpi-value" id="kv-cnt">—</div><div class="kpi-sub">Successfully priced</div></div>
-      <div class="kpi-card" style="--accent-line:#ffd166"><div class="kpi-label">Portfolio Beta</div><div class="kpi-value neu" id="kv-beta">—</div><div class="kpi-sub" id="ks-beta">vs S&amp;P 500</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-value pos" id="kv-sharpe">—</div><div class="kpi-sub">Annualised · risk-free 5%</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Alpha</div><div class="kpi-value pos" id="kv-alpha">—</div><div class="kpi-sub" id="ks-alpha">vs S&amp;P 500 · annualised</div></div>
+  <div id=\"page-dashboard\" class=\"page active\">
+    <div class=\"kpi-grid\">
+      <div class=\"kpi-card\" style=\"--accent-line:#00e5b0\"><div class=\"kpi-label\">Total Portfolio Value</div><div class=\"kpi-value\" id=\"kv-total\">—</div><div class=\"kpi-sub\" id=\"ks-total\">Fetching…</div></div>
+      <div class=\"kpi-card\" style=\"--accent-line:#00e5b0\"><div class=\"kpi-label\">P&amp;L (Current Positions)</div><div class=\"kpi-value\" id=\"kv-pnl\">—</div><div class=\"kpi-sub\" id=\"ks-pnl\">Unrealised · current holdings</div></div>
+      <div class=\"kpi-card\" style=\"--accent-line:#00e5b0\"><div class=\"kpi-label\">Live Positions</div><div class=\"kpi-value\" id=\"kv-cnt\">—</div><div class=\"kpi-sub\">Successfully priced</div></div>
+      <div class=\"kpi-card\" style=\"--accent-line:#ffd166\"><div class=\"kpi-label\">Portfolio Beta</div><div class=\"kpi-value neu\" id=\"kv-beta\">—</div><div class=\"kpi-sub\" id=\"ks-beta\">vs S&amp;P 500</div></div>
+      <div class=\"kpi-card\" style=\"--accent-line:#00e5b0\"><div class=\"kpi-label\">Sharpe Ratio</div><div class=\"kpi-value pos\" id=\"kv-sharpe\">—</div><div class=\"kpi-sub\">Annualised · risk-free 5%</div></div>
+      <div class=\"kpi-card\" style=\"--accent-line:#00e5b0\"><div class=\"kpi-label\">Alpha</div><div class=\"kpi-value pos\" id=\"kv-alpha\">—</div><div class=\"kpi-sub\" id=\"ks-alpha\">vs S&amp;P 500 · annualised</div></div>
     </div>
 
     <!-- Performance vs Indexes — full width -->
-    <div class="chart-card wide" style="margin-bottom:20px;overflow:hidden;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
-        <div class="chart-title" style="margin-bottom:0"><div class="dot"></div>Portfolio vs Market Indexes — Since Inception (May 2024)</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;" id="perf-toggles">
-          <button class="ptog active" data-key="portfolio" onclick="toggleLine(this)">Our Portfolio</button>
-          <button class="ptog active" data-key="spx"       onclick="toggleLine(this)">S&amp;P 500</button>
-          <button class="ptog active" data-key="nasdaq"    onclick="toggleLine(this)">Nasdaq</button>
-          <button class="ptog active" data-key="dji"       onclick="toggleLine(this)">Dow Jones</button>
-          <button class="ptog active" data-key="rut"       onclick="toggleLine(this)">Russell 2000</button>
+    <div class=\"chart-card wide\" style=\"margin-bottom:20px;overflow:hidden;\">
+      <div style=\"display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;\">
+        <div class=\"chart-title\" style=\"margin-bottom:0\"><div class=\"dot\"></div>Portfolio vs Market Indexes — Since Inception (May 2024)</div>
+        <div style=\"display:flex;gap:6px;flex-wrap:wrap;\" id=\"perf-toggles\">
+          <button class=\"ptog active\" data-key=\"portfolio\" onclick=\"toggleLine(this)\">Our Portfolio</button>
+          <button class=\"ptog active\" data-key=\"spx\"       onclick=\"toggleLine(this)\">S&amp;P 500</button>
+          <button class=\"ptog active\" data-key=\"nasdaq\"    onclick=\"toggleLine(this)\">Nasdaq</button>
+          <button class=\"ptog active\" data-key=\"dji\"       onclick=\"toggleLine(this)\">Dow Jones</button>
+          <button class=\"ptog active\" data-key=\"rut\"       onclick=\"toggleLine(this)\">Russell 2000</button>
         </div>
         <!-- Time range toggles -->
-        <div style="display:flex;gap:4px;">
-<button class="range-btn" data-range="1M"    onclick="setRange(this)">1M</button>
-          <button class="range-btn" data-range="1Y"    onclick="setRange(this)">1Y</button>
-          <button class="range-btn" data-range="YTD"   onclick="setRange(this)">YTD</button>
-          <button class="range-btn active" data-range="ALL" onclick="setRange(this)">All</button>
+        <div style=\"display:flex;gap:4px;\">
+<button class=\"range-btn\" data-range=\"1M\"    onclick=\"setRange(this)\">1M</button>
+          <button class=\"range-btn\" data-range=\"1Y\"    onclick=\"setRange(this)\">1Y</button>
+          <button class=\"range-btn\" data-range=\"YTD\"   onclick=\"setRange(this)\">YTD</button>
+          <button class=\"range-btn active\" data-range=\"ALL\" onclick=\"setRange(this)\">All</button>
         </div>
       </div>
-      <div style="position:relative;width:100%;height:340px;overflow:hidden;">
-        <canvas id="c-perf" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;"></canvas>
+      <div style=\"position:relative;width:100%;height:340px;overflow:hidden;\">
+        <canvas id=\"c-perf\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;display:block;\"></canvas>
       </div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;text-align:right;">
+      <div style=\"font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px;text-align:right;\">
         All series indexed to 100 at range start. Historical data from spreadsheet.
       </div>
     </div>
 
     <!-- Sector allocation full width -->
-    <div style="margin-bottom:32px;">
-      <div class="chart-card" style="overflow:hidden;">
-        <div class="chart-title"><div class="dot"></div>Sector Allocation</div>
-        <canvas id="c-sector" height="420" style="width:100%;height:420px;max-height:420px;display:block;"></canvas>
+    <div style=\"margin-bottom:32px;\">
+      <div class=\"chart-card\" style=\"overflow:hidden;\">
+        <div class=\"chart-title\"><div class=\"dot\"></div>Sector Allocation</div>
+        <canvas id=\"c-sector\" height=\"420\" style=\"width:100%;height:420px;max-height:420px;display:block;\"></canvas>
       </div>
     </div>
   </div>
 
   <!-- HOLDINGS -->
-  <div id="page-holdings" class="page">
-    <div class="table-wrapper">
-      <div class="table-controls">
-        <input class="search-box" id="srch" placeholder="Search ticker, name, or sector…" oninput="renderH()">
-        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <div id=\"page-holdings\" class=\"page\">
+    <div class=\"table-wrapper\">
+      <div class=\"table-controls\">
+        <input class=\"search-box\" id=\"srch\" placeholder=\"Search ticker, name, or sector…\" oninput=\"renderH()\">
+        <button class=\"filter-btn active\" onclick=\"setFilter(`all',this)">All</button>
         <button class="filter-btn" onclick="setFilter('Information Technology',this)">Tech</button>
         <button class="filter-btn" onclick="setFilter('Financials',this)">Financials</button>
         <button class="filter-btn" onclick="setFilter('Health Care',this)">Health Care</button>
@@ -332,88 +332,88 @@
             <th onclick="sort('weight')">Weight ↕</th>
             <th onclick="sort('dayChange')">Day Δ ↕</th>
             <th onclick="sort('dollarReturn')">$ Return ↕</th>
-            <th onclick="sort('pctReturn')">% Return ↕</th>
+            <th onclick="sort('pctReturn`)\">% Return ↕</th>
             <th>Actions</th>
           </tr></thead>
-          <tbody id="htbody"></tbody>
+          <tbody id=\"htbody\"></tbody>
         </table>
       </div>
     </div>
   </div>
 
   <!-- ANALYTICS -->
-  <div id="page-analytics" class="page">
-    <div class="section-header"><div class="section-title">Portfolio Metrics</div></div>
-    <div class="metrics-grid" style="margin-bottom:32px;">
-      <div class="metric-card"><div class="metric-label">Beta</div><div class="metric-value neu">0.999</div><div class="metric-label" style="margin-top:4px">Market Sensitivity</div></div>
-      <div class="metric-card"><div class="metric-label">Alpha</div><div class="metric-value pos">0.40%</div><div class="metric-label" style="margin-top:4px">Excess Return</div></div>
-      <div class="metric-card"><div class="metric-label">Sharpe Ratio</div><div class="metric-value pos">0.941</div><div class="metric-label" style="margin-top:4px">Risk-Adjusted</div></div>
-      <div class="metric-card"><div class="metric-label">Live AUM</div><div class="metric-value pos" id="a-total">—</div><div class="metric-label" style="margin-top:4px">Total Value</div></div>
+  <div id=\"page-analytics\" class=\"page\">
+    <div class=\"section-header\"><div class=\"section-title\">Portfolio Metrics</div></div>
+    <div class=\"metrics-grid\" style=\"margin-bottom:32px;\">
+      <div class=\"metric-card\"><div class=\"metric-label\">Beta</div><div class=\"metric-value neu\">0.999</div><div class=\"metric-label\" style=\"margin-top:4px\">Market Sensitivity</div></div>
+      <div class=\"metric-card\"><div class=\"metric-label\">Alpha</div><div class=\"metric-value pos\">0.40%</div><div class=\"metric-label\" style=\"margin-top:4px\">Excess Return</div></div>
+      <div class=\"metric-card\"><div class=\"metric-label\">Sharpe Ratio</div><div class=\"metric-value pos\">0.941</div><div class=\"metric-label\" style=\"margin-top:4px\">Risk-Adjusted</div></div>
+      <div class=\"metric-card\"><div class=\"metric-label\">Live AUM</div><div class=\"metric-value pos\" id=\"a-total\">—</div><div class=\"metric-label\" style=\"margin-top:4px\">Total Value</div></div>
     </div>
-    <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title"><div class="dot"></div>Sector Weights</div><canvas id="c-secbar" height="300"></canvas></div>
-      <div class="chart-card"><div class="chart-title"><div class="dot"></div>Return Distribution</div><canvas id="c-dist" height="300"></canvas></div>
-      <div class="chart-card wide"><div class="chart-title"><div class="dot"></div>Day Change Heatmap (Live)</div><div id="heatmap" style="display:flex;flex-wrap:wrap;gap:4px;padding:8px 0;"></div></div>
+    <div class=\"charts-grid\">
+      <div class=\"chart-card\"><div class=\"chart-title\"><div class=\"dot\"></div>Sector Weights</div><canvas id=\"c-secbar\" height=\"300\"></canvas></div>
+      <div class=\"chart-card\"><div class=\"chart-title\"><div class=\"dot\"></div>Return Distribution</div><canvas id=\"c-dist\" height=\"300\"></canvas></div>
+      <div class=\"chart-card wide\"><div class=\"chart-title\"><div class=\"dot\"></div>Day Change Heatmap (Live)</div><div id=\"heatmap\" style=\"display:flex;flex-wrap:wrap;gap:4px;padding:8px 0;\"></div></div>
     </div>
   </div>
 
   <!-- MANAGE -->
 
-  <div id="page-transactions" class="page">
-    <div class="table-wrapper" style="margin-bottom:24px;">
-      <div class="table-controls">
-        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)" id="txn-count"></span>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <select id="txn-filter-action" onchange="renderTransactions()" style="background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;">
-            <option value="ALL">All Actions</option>
-            <option value="BUY">Buys Only</option>
-            <option value="SELL">Sells Only</option>
+  <div id=\"page-transactions\" class=\"page\">
+    <div class=\"table-wrapper\" style=\"margin-bottom:24px;\">
+      <div class=\"table-controls\">
+        <span style=\"font-family:var(--mono);font-size:12px;color:var(--muted)\" id=\"txn-count\"></span>
+        <div style=\"display:flex;gap:10px;align-items:center;\">
+          <select id=\"txn-filter-action\" onchange=\"renderTransactions()\" style=\"background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;\">
+            <option value=\"ALL\">All Actions</option>
+            <option value=\"BUY\">Buys Only</option>
+            <option value=\"SELL\">Sells Only</option>
           </select>
-          <input id="txn-search" placeholder="Search ticker or company..." oninput="renderTransactions()"
-            style="background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;width:220px;">
+          <input id=\"txn-search\" placeholder=\"Search ticker or company...\" oninput=\"renderTransactions()\"
+            style=\"background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:12px;width:220px;\">
         </div>
       </div>
-      <div class="ox"><table id="txn-table">
+      <div class=\"ox\"><table id=\"txn-table\">
         <thead><tr>
           <th>Date</th>
           <th>Action</th>
           <th>Ticker</th>
           <th>Company</th>
-          <th style="text-align:right">Shares</th>
-          <th style="text-align:right">Price</th>
-          <th style="text-align:right">Value</th>
-          <th style="text-align:right">Shares After</th>
-          <th style="text-align:right">Perf. Since Txn</th>
+          <th style=\"text-align:right\">Shares</th>
+          <th style=\"text-align:right\">Price</th>
+          <th style=\"text-align:right\">Value</th>
+          <th style=\"text-align:right\">Shares After</th>
+          <th style=\"text-align:right\">Perf. Since Txn</th>
         </tr></thead>
-        <tbody id="txn-body"></tbody>
+        <tbody id=\"txn-body\"></tbody>
       </table></div>
     </div>
     <!-- Summary cards -->
-    <div class="kpi-row" id="txn-summary"></div>
+    <div class=\"kpi-row\" id=\"txn-summary\"></div>
   </div>
-  <div id="page-manage" class="page">
-    <div class="form-card">
-      <div class="section-title" style="margin-bottom:24px;">Add New Position</div>
-      <div class="form-grid">
-        <div class="form-group"><label>Ticker *</label><input id="ft" placeholder="AAPL" style="text-transform:uppercase"></div>
-        <div class="form-group"><label>Company Name *</label><input id="fn" placeholder="Apple Inc."></div>
-        <div class="form-group"><label>Sector *</label>
-          <select id="fs">
+  <div id=\"page-manage\" class=\"page\">
+    <div class=\"form-card\">
+      <div class=\"section-title\" style=\"margin-bottom:24px;\">Add New Position</div>
+      <div class=\"form-grid\">
+        <div class=\"form-group\"><label>Ticker *</label><input id=\"ft\" placeholder=\"AAPL\" style=\"text-transform:uppercase\"></div>
+        <div class=\"form-group\"><label>Company Name *</label><input id=\"fn\" placeholder=\"Apple Inc.\"></div>
+        <div class=\"form-group\"><label>Sector *</label>
+          <select id=\"fs\">
             <option>Information Technology</option><option>Financials</option><option>Health Care</option>
             <option>Industrials</option><option>Consumer Discretionary</option><option>Consumer Staples</option>
             <option>Energy</option><option>Utilities</option><option>Real Estate</option>
             <option>Materials</option><option>Communication Services</option>
-            <option value="Cash and Cash Equivalents">Cash / Equivalents</option>
+            <option value=\"Cash and Cash Equivalents\">Cash / Equivalents</option>
           </select>
         </div>
-        <div class="form-group"><label>Shares *</label><input id="fsh" type="number" placeholder="100"></div>
-        <div class="form-group"><label>Avg Purchase Price ($) *</label><input id="fa" type="number" step="0.01" placeholder="120.00"></div>
-        <div class="form-group"><label>Override Price ($) <span style="color:var(--muted);font-size:9px">optional</span></label><input id="fp" type="number" step="0.01" placeholder="Auto-fetched from Yahoo"></div>
+        <div class=\"form-group\"><label>Shares *</label><input id=\"fsh\" type=\"number\" placeholder=\"100\"></div>
+        <div class=\"form-group\"><label>Avg Purchase Price ($) *</label><input id=\"fa\" type=\"number\" step=\"0.01\" placeholder=\"120.00\"></div>
+        <div class=\"form-group\"><label>Override Price ($) <span style=\"color:var(--muted);font-size:9px\">optional</span></label><input id=\"fp\" type=\"number\" step=\"0.01\" placeholder=\"Auto-fetched from Yahoo\"></div>
       </div>
-      <button class="btn-add" id="addbtn" onclick="addHolding()">+ Add Position</button>
+      <button class=\"btn-add\" id=\"addbtn\" onclick=\"addHolding()\">+ Add Position</button>
     </div>
-    <div class="table-wrapper">
-      <div class="table-controls"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted)">All positions</span></div>
+    <div class=\"table-wrapper\">
+      <div class=\"table-controls\"><span style=\"font-family:`JetBrains Mono',monospace;font-size:12px;color:var(--muted)">All positions</span></div>
       <div class="ox"><table>
         <thead><tr><th>Ticker</th><th>Name</th><th>Shares</th><th>Avg Cost</th><th>Live Price</th><th>$ Return</th><th></th></tr></thead>
         <tbody id="mtbody"></tbody>
@@ -688,19 +688,27 @@ function renderAll() { renderDash(); renderH(); renderMgr(); }
 // TRANSACTIONS PAGE
 // ─────────────────────────────────────────────────────────────
 function getPerfSinceTxn(ticker, txnPrice, txnDate) {
-  // S&P 500 performance since transaction date (as benchmark)
+  // Stock performance since transaction date vs actual transaction price
+  // Works for both current holdings (uses live price) and sold positions (uses last known price from PERF_DATA)
+  const holding   = H.find(h => h.ticker === ticker);
+  const livePrice = holding?.price ?? null;
+
+  // Use live price if available, otherwise fall back to last price in PERF_DATA
+  let currentPrice = livePrice;
+  if (!currentPrice) {
+    // Try to get last known price from holdings avgCost as rough proxy — not ideal but better than nothing
+    currentPrice = holding?.avgCost ?? null;
+  }
+
+  const stockPerf = (currentPrice && txnPrice) ? (currentPrice / txnPrice - 1) * 100 : null;
+
+  // S&P 500 over same period as benchmark
   const txnEntry  = PERF_DATA.find(d => d.date >= txnDate);
-  const lastEntry = PERF_DATA[PERF_DATA.length - 1];
-  const spxPerf   = (txnEntry && lastEntry && txnEntry.spx && lastEntry.spx)
-                    ? (lastEntry.spx / txnEntry.spx - 1) * 100
-                    : null;
+  const lastEntry = [...PERF_DATA].reverse().find(d => d.spx != null);
+  const spxPerf   = (txnEntry?.spx && lastEntry?.spx)
+                    ? (lastEntry.spx / txnEntry.spx - 1) * 100 : null;
 
-  // Ticker performance: live price vs the actual price we paid/received on that day
-  const holding    = H.find(h => h.ticker === ticker);
-  const livePrice  = holding?.livePrice ?? null;
-  const tickerPerf = (livePrice && txnPrice) ? (livePrice / txnPrice - 1) * 100 : null;
-
-  return { spxPerf, tickerPerf };
+  return { stockPerf, spxPerf, hasLive: !!livePrice };
 }
 
 function renderTransactions() {
@@ -727,28 +735,22 @@ function renderTransactions() {
     const priceStr = t.price ? '$' + t.price.toFixed(2) : '—';
     const sharesAfter = t.new > 0 ? t.new.toLocaleString() : '<span style="color:var(--neg)">Closed</span>';
 
-    // Performance since transaction
-    let perfCell = '<td style="text-align:right;font-family:'JetBrains Mono',monospace;color:var(--muted)">—</td>';
+    // Performance since transaction: how much has the stock moved since we bought/sold it
+    let perfCell = `<td style="text-align:right;font-family:var(--mono);color:var(--muted)">—</td>`;
     const perf = getPerfSinceTxn(t.ticker, t.price, t.date);
-    if (perf && (perf.tickerPerf !== null || perf.spxPerf !== null)) {
-      const spxStr = perf.spxPerf !== null ? (perf.spxPerf >= 0 ? '+' : '') + perf.spxPerf.toFixed(1) + '%' : '—';
-      if (perf.tickerPerf !== null) {
-        const tkSign = perf.tickerPerf >= 0 ? '+' : '';
-        const tkClass = perf.tickerPerf >= 0 ? 'pos' : 'neg';
-        const spxClass = perf.spxPerf >= 0 ? 'pos' : 'neg';
-        // For sells: show what the stock has done since sold (opportunity cost / vindication)
-        const label = isBuy ? 'vs entry' : 'since sold';
-        perfCell = `<td style="text-align:right;font-family:var(--mono);font-size:12px">
-          <span class="${tkClass}" style="font-weight:700">${tkSign}${perf.tickerPerf.toFixed(1)}%</span>
-          <span style="color:var(--muted);font-size:10px;display:block">S&P: <span class="${spxClass}">${spxStr}</span></span>
-        </td>`;
-      } else {
-        // Sold position — no live price available, show S&P perf since sale
-        const spxClass = perf.spxPerf >= 0 ? 'pos' : 'neg';
-        perfCell = `<td style="text-align:right;font-family:var(--mono);font-size:12px">
-          <span style="color:var(--muted);font-size:10px">S&P since: <span class="${spxClass}">${spxStr}</span></span>
-        </td>`;
-      }
+    if (perf && perf.stockPerf !== null) {
+      const sign       = perf.stockPerf >= 0 ? '+' : '';
+      const spxSign    = (perf.spxPerf ?? 0) >= 0 ? '+' : '';
+      const spxStr     = perf.spxPerf !== null ? `${spxSign}${perf.spxPerf.toFixed(1)}%` : '—';
+      const spxClass   = (perf.spxPerf ?? 0) >= 0 ? 'pos' : 'neg';
+      // For sells: stock going UP is bad (opportunity cost), so invert colour
+      const dispClass  = isBuy
+        ? (perf.stockPerf >= 0 ? 'pos' : 'neg')
+        : (perf.stockPerf >= 0 ? 'neg' : 'pos');
+      perfCell = `<td style="text-align:right;font-family:var(--mono);font-size:13px;line-height:1.6">
+        <span class="${dispClass}" style="font-weight:700">${sign}${perf.stockPerf.toFixed(1)}%</span>
+        <span style="color:var(--muted);font-size:10px;display:block">SPX: <span class="${spxClass}">${spxStr}</span></span>
+      </td>`;
     }
 
     return `<tr>
