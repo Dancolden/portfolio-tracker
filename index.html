@@ -657,7 +657,7 @@ const fp  = n => (n==null||isNaN(n)) ? '—' : (n>=0?'+':'')+(n*100).toFixed(2)+
 // ─────────────────────────────────────────────────────────────
 // RENDER ALL
 // ─────────────────────────────────────────────────────────────
-function renderAll() { renderDash(); renderH(); renderMgr(); }
+function renderAll() { renderDash(); renderH(); renderMgr(); fetchTxnPrices(); }
 
 // ─────────────────────────────────────────────────────────────
 // NAV
@@ -666,18 +666,20 @@ function renderAll() { renderDash(); renderH(); renderMgr(); }
 // ─────────────────────────────────────────────────────────────
 // TRANSACTIONS PAGE
 // ─────────────────────────────────────────────────────────────
-// Cache of live prices fetched for transaction tickers (includes sold positions)
+// Cache of live prices for transaction tickers (covers sold positions not in holdings)
 const TXN_PRICE_CACHE = {};
 
 async function fetchTxnPrices() {
-  // Get unique tickers from transactions that aren't already in holdings
   const txnTickers = [...new Set(TRANSACTION_DATA.map(t => t.ticker))];
-  const toFetch = txnTickers.filter(tk => {
-    const h = H.find(x => x.ticker === tk);
-    return !h || !h.price; // fetch if not in holdings or no price yet
-  });
 
-  await Promise.all(toFetch.map(async ticker => {
+  await Promise.all(txnTickers.map(async ticker => {
+    // If holdings already has a live price, use it directly
+    const holding = H.find(x => x.ticker === ticker);
+    if (holding?.price) {
+      TXN_PRICE_CACHE[ticker] = holding.price;
+      return;
+    }
+    // Otherwise fetch from Yahoo (covers fully-sold positions)
     try {
       const { price } = await fetchPrice(ticker);
       TXN_PRICE_CACHE[ticker] = price;
@@ -686,18 +688,11 @@ async function fetchTxnPrices() {
     }
   }));
 
-  // Also pull from already-fetched holdings
-  H.forEach(h => {
-    if (h.price) TXN_PRICE_CACHE[h.ticker] = h.price;
-  });
-
-  renderTransactions();
+  renderTransactions(); // re-render now that cache is populated
 }
 
 function getPerfSinceTxn(ticker, txnPrice) {
-  // Live price: from holdings (already fetched) or from our separate txn cache
-  const holding   = H.find(h => h.ticker === ticker);
-  const livePrice = holding?.price ?? TXN_PRICE_CACHE[ticker] ?? null;
+  const livePrice = TXN_PRICE_CACHE[ticker] ?? null;
   if (!livePrice || !txnPrice) return null;
   return (livePrice / txnPrice - 1) * 100;
 }
@@ -783,7 +778,7 @@ function showPage(name, btn) {
   document.getElementById('page-'+name).classList.add('active');
   btn?.classList.add('active');
   if (name==='analytics') renderAnalytics();
-  if (name==='transactions') { renderTransactions(); fetchTxnPrices(); }
+  if (name==='transactions') { fetchTxnPrices(); }
 }
 
 
