@@ -142,6 +142,21 @@
   .chart-title{font-size:13px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
 
+  .range-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 5px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .range-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .range-btn.active { background: var(--accent); border-color: var(--accent); color: #0a0e13; font-weight: 700; }
+
   /* Manage form */
   .form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;}
   .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
@@ -257,12 +272,22 @@
           <button class="ptog active" data-key="nasdaq"    onclick="toggleLine(this)">Nasdaq</button>
           <button class="ptog active" data-key="dji"       onclick="toggleLine(this)">Dow Jones</button>
           <button class="ptog active" data-key="rut"       onclick="toggleLine(this)">Russell 2000</button>
-
+        </div>
+        <!-- Time range toggles -->
+        <div style="display:flex;gap:4px;">
+          <button class="range-btn" data-range="1D"    onclick="setRange(this)">1D</button>
+          <button class="range-btn" data-range="1W"    onclick="setRange(this)">1W</button>
+          <button class="range-btn" data-range="1M"    onclick="setRange(this)">1M</button>
+          <button class="range-btn" data-range="1Y"    onclick="setRange(this)">1Y</button>
+          <button class="range-btn" data-range="YTD"   onclick="setRange(this)">YTD</button>
+          <button class="range-btn active" data-range="ALL" onclick="setRange(this)">All</button>
         </div>
       </div>
-      <canvas id="c-perf" height="340" style="width:100%;height:340px;max-height:340px;display:block;"></canvas>
+      <div style="position:relative;width:100%;height:340px;overflow:hidden;">
+        <canvas id="c-perf" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block;"></canvas>
+      </div>
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:10px;text-align:right;">
-        All series indexed to 100 on May 13, 2024 (inception date). Historical data from spreadsheet.
+        All series indexed to 100 at range start. Historical data from spreadsheet.
       </div>
     </div>
 
@@ -800,6 +825,33 @@ const SERIES_CFG = {
   rut:       {label:'Russell 2000',   color:'#f97316', width:1.5},
 };
 let activeLines = new Set(Object.keys(SERIES_CFG));
+let activeRange  = 'ALL';
+
+function setRange(btn) {
+  activeRange = btn.dataset.range;
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildPerfChart();
+}
+
+function getFilteredPerfData() {
+  if (activeRange === 'ALL') return PERF_DATA;
+  const last = PERF_DATA[PERF_DATA.length - 1].date;
+  const end  = new Date(last);
+  let start;
+  if (activeRange === '1D') {
+    start = new Date(end); start.setDate(start.getDate() - 1);
+  } else if (activeRange === '1W') {
+    start = new Date(end); start.setDate(start.getDate() - 7);
+  } else if (activeRange === '1M') {
+    start = new Date(end); start.setMonth(start.getMonth() - 1);
+  } else if (activeRange === '1Y') {
+    start = new Date(end); start.setFullYear(start.getFullYear() - 1);
+  } else if (activeRange === 'YTD') {
+    start = new Date(end.getFullYear(), 0, 1);
+  }
+  return PERF_DATA.filter(d => new Date(d.date) >= start);
+}
 
 function toggleLine(btn) {
   const key = btn.dataset.key;
@@ -815,12 +867,20 @@ function toggleLine(btn) {
 }
 
 function buildPerfChart() {
-  const dates = PERF_DATA.map(d => d.date);
+  const filtered = getFilteredPerfData();
+  // Re-index to 100 at start of visible range
+  const baseVals = {};
+  for (const k of Object.keys(SERIES_CFG)) {
+    const first = filtered.find(d => d[k] != null);
+    baseVals[k] = first ? first[k] : null;
+  }
+
+  const dates = filtered.map(d => d.date);
   const datasets = Object.entries(SERIES_CFG)
     .filter(([k]) => activeLines.has(k))
     .map(([k, cfg]) => ({
       label: cfg.label,
-      data: PERF_DATA.map(d => d[k] !== undefined ? d[k] : null),
+      data: filtered.map(d => (d[k] != null && baseVals[k]) ? +(d[k] / baseVals[k] * 100).toFixed(4) : null),
       borderColor: cfg.color,
       backgroundColor: k === 'portfolio' ? cfg.color + '18' : 'transparent',
       fill: k === 'portfolio',
@@ -833,16 +893,25 @@ function buildPerfChart() {
     }));
 
   const perfCanvas = document.getElementById('c-perf');
+  // Fix blur: match canvas pixel size to its CSS display size
+  const dpr = window.devicePixelRatio || 1;
+  const displayW = perfCanvas.parentElement.clientWidth  || 800;
+  const displayH = 340;
+  perfCanvas.width  = Math.round(displayW * dpr);
+  perfCanvas.height = Math.round(displayH * dpr);
+  perfCanvas.style.width  = displayW + 'px';
+  perfCanvas.style.height = displayH + 'px';
+
   const ctx = perfCanvas.getContext('2d');
-  if (CH.perf) CH.perf.destroy();
+  ctx.scale(dpr, dpr);
+  if (CH.perf) { CH.perf.destroy(); CH.perf = null; }
   CH.perf = new Chart(ctx, {
     type: 'line',
     data: { labels: dates, datasets },
     options: {
       responsive: false,
       maintainAspectRatio: false,
-      animation: { duration: 0 },
-      onResize: () => {},
+      animation: { duration: 150 },
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
@@ -1078,17 +1147,12 @@ function toast(msg) {
 // ─────────────────────────────────────────────────────────────
 // BOOT
 // ─────────────────────────────────────────────────────────────
-// Prevent Chart.js resize observer loop
-const _OrigResizeObserver = window.ResizeObserver;
-window.ResizeObserver = class extends _OrigResizeObserver {
-  constructor(cb) {
-    let last = 0;
-    super((...args) => {
-      const now = Date.now();
-      if (now - last > 200) { last = now; cb(...args); }
-    });
-  }
-};
+// Re-draw perf chart on window resize to stay sharp
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => { if (CH.perf) buildPerfChart(); }, 150);
+});
 fetchAll();
 </script>
 </body>
