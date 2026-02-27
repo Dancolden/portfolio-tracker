@@ -215,6 +215,7 @@
   <div class="loader-label">Fetching live prices from Yahoo Finance…</div>
   <div class="loader-track"><div class="loader-fill" id="lf"></div></div>
   <div class="loader-sub" id="lp">Starting…</div>
+  <button id="skip-btn" onclick="skipLoader()" style="display:none;margin-top:18px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 16px;font-size:11px;cursor:pointer;font-family:var(--mono)">Skip & show last prices</button>
 </div>
 
 <header>
@@ -431,38 +432,37 @@
 // ~15 min delayed during market hours (free tier standard).
 // ─────────────────────────────────────────────────────────────
 async function fetchPrice(ticker) {
-  // Try two proxy endpoints in case one is down
+  // Multiple CORS proxy options — tries each in order until one works
+  const yUrl = t => `https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1d`;
   const proxies = [
-    t => `https://corsproxy.io/?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1d`)}`,
-    t => `https://api.allorigins.win/get?url=${encodeURIComponent(`https://query2.finance.yahoo.com/v8/finance/chart/${t}?interval=1d&range=1d`)}`,
+    t => `https://corsproxy.io/?url=${encodeURIComponent(yUrl(t))}`,
+    t => `https://api.allorigins.win/get?url=${encodeURIComponent(yUrl(t))}`,
+    t => `https://thingproxy.freeboard.io/fetch/${yUrl(t)}`,
+    t => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yUrl(t))}`,
   ];
 
   for (const makeUrl of proxies) {
     try {
-      const res = await fetch(makeUrl(encodeURIComponent(ticker)), {
-        signal: AbortSignal.timeout(9000)
-      });
+      const res = await fetch(makeUrl(ticker), { signal: AbortSignal.timeout(8000) });
       if (!res.ok) continue;
-
-      let parsed;
       const text = await res.text();
+      if (!text || text.length < 10) continue;
+      let parsed;
       try {
-        // corsproxy.io returns raw JSON; allorigins wraps in {contents:"..."}
         const outer = JSON.parse(text);
+        // allorigins wraps in {contents:"..."}, others return raw JSON
         parsed = outer.contents ? JSON.parse(outer.contents) : outer;
       } catch { continue; }
 
       const result = parsed?.chart?.result?.[0];
       if (!result) continue;
-
-      const meta = result.meta;
+      const meta  = result.meta;
       const price = meta.regularMarketPrice ?? meta.previousClose;
       const prev  = meta.previousClose ?? meta.chartPreviousClose;
       if (!price) continue;
-
       return {
         price,
-        dayChange: prev ? (price - prev) / prev : 0,
+        dayChange:   prev ? (price - prev) / prev : 0,
         marketState: meta.marketState ?? 'UNKNOWN',
       };
     } catch { /* try next proxy */ }
@@ -556,6 +556,21 @@ function recompute() {
 // FETCH ALL — parallel batches of 6
 // ─────────────────────────────────────────────────────────────
 let fetching = false;
+let _skipTimer;
+
+function skipLoader() {
+  clearTimeout(_skipTimer);
+  recompute();
+  document.getElementById('ov').classList.add('hidden');
+  document.getElementById('rbtn').disabled = false;
+  document.getElementById('rbtn').classList.remove('spinning');
+  fetching = false;
+  clearTimeout(_skipTimer);
+  const skipBtn = document.getElementById('skip-btn');
+  if (skipBtn) skipBtn.style.display = 'none';
+  renderDashboard();
+  renderHoldings();
+}
 
 async function fetchAll() {
   if (fetching) return;
@@ -563,6 +578,12 @@ async function fetchAll() {
 
   setStatus('loading','Fetching…');
   document.getElementById('ov').classList.remove('hidden');
+  document.getElementById('skip-btn').style.display = 'none';
+  clearTimeout(_skipTimer);
+  _skipTimer = setTimeout(() => {
+    const btn = document.getElementById('skip-btn');
+    if (btn) btn.style.display = 'inline-block';
+  }, 8000);
   document.getElementById('rbtn').disabled = true;
   document.getElementById('rbtn').classList.add('spinning');
 
@@ -570,7 +591,7 @@ async function fetchAll() {
   let done = 0, failed = [];
   const prevPrices = Object.fromEntries(H.map(h => [h.ticker, h.price]));
 
-  const BATCH = 6;
+  const BATCH = 8;
   for (let i = 0; i < targets.length; i += BATCH) {
     const batch = targets.slice(i, i + BATCH);
     await Promise.all(batch.map(async h => {
