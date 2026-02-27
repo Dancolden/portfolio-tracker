@@ -666,20 +666,40 @@ function renderAll() { renderDash(); renderH(); renderMgr(); }
 // ─────────────────────────────────────────────────────────────
 // TRANSACTIONS PAGE
 // ─────────────────────────────────────────────────────────────
-function getPerfSinceTxn(ticker, txnPrice, txnDate) {
-  // S&P 500 performance since transaction date (as benchmark)
-  const txnEntry  = PERF_DATA.find(d => d.date >= txnDate);
-  const lastEntry = PERF_DATA[PERF_DATA.length - 1];
-  const spxPerf   = (txnEntry && lastEntry && txnEntry.spx && lastEntry.spx)
-                    ? (lastEntry.spx / txnEntry.spx - 1) * 100
-                    : null;
+// Cache of live prices fetched for transaction tickers (includes sold positions)
+const TXN_PRICE_CACHE = {};
 
-  // Ticker performance: live price vs the actual price we paid/received on that day
-  const holding    = H.find(h => h.ticker === ticker);
-  const livePrice  = holding?.livePrice ?? null;
-  const tickerPerf = (livePrice && txnPrice) ? (livePrice / txnPrice - 1) * 100 : null;
+async function fetchTxnPrices() {
+  // Get unique tickers from transactions that aren't already in holdings
+  const txnTickers = [...new Set(TRANSACTION_DATA.map(t => t.ticker))];
+  const toFetch = txnTickers.filter(tk => {
+    const h = H.find(x => x.ticker === tk);
+    return !h || !h.price; // fetch if not in holdings or no price yet
+  });
 
-  return { spxPerf, tickerPerf };
+  await Promise.all(toFetch.map(async ticker => {
+    try {
+      const { price } = await fetchPrice(ticker);
+      TXN_PRICE_CACHE[ticker] = price;
+    } catch {
+      TXN_PRICE_CACHE[ticker] = null;
+    }
+  }));
+
+  // Also pull from already-fetched holdings
+  H.forEach(h => {
+    if (h.price) TXN_PRICE_CACHE[h.ticker] = h.price;
+  });
+
+  renderTransactions();
+}
+
+function getPerfSinceTxn(ticker, txnPrice) {
+  // Live price: from holdings (already fetched) or from our separate txn cache
+  const holding   = H.find(h => h.ticker === ticker);
+  const livePrice = holding?.price ?? TXN_PRICE_CACHE[ticker] ?? null;
+  if (!livePrice || !txnPrice) return null;
+  return (livePrice / txnPrice - 1) * 100;
 }
 
 function renderTransactions() {
@@ -706,28 +726,20 @@ function renderTransactions() {
     const priceStr = t.price ? '$' + t.price.toFixed(2) : '—';
     const sharesAfter = t.new > 0 ? t.new.toLocaleString() : '<span style="color:var(--neg)">Closed</span>';
 
-    // Performance since transaction
-    let perfCell = `<td style="text-align:right;font-family:'JetBrains Mono',monospace;color:var(--muted)">—</td>`;
-    const perf = getPerfSinceTxn(t.ticker, t.price, t.date);
-    if (perf && (perf.tickerPerf !== null || perf.spxPerf !== null)) {
-      const spxStr = perf.spxPerf !== null ? (perf.spxPerf >= 0 ? '+' : '') + perf.spxPerf.toFixed(1) + '%' : '—';
-      if (perf.tickerPerf !== null) {
-        const tkSign = perf.tickerPerf >= 0 ? '+' : '';
-        const tkClass = perf.tickerPerf >= 0 ? 'pos' : 'neg';
-        const spxClass = perf.spxPerf >= 0 ? 'pos' : 'neg';
-        // For sells: show what the stock has done since sold (opportunity cost / vindication)
-        const label = isBuy ? 'vs entry' : 'since sold';
-        perfCell = `<td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px">
-          <span class="${tkClass}" style="font-weight:700">${tkSign}${perf.tickerPerf.toFixed(1)}%</span>
-          <span style="color:var(--muted);font-size:10px;display:block">S&P: <span class="${spxClass}">${spxStr}</span></span>
-        </td>`;
-      } else {
-        // Sold position — no live price available, show S&P perf since sale
-        const spxClass = perf.spxPerf >= 0 ? 'pos' : 'neg';
-        perfCell = `<td style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px">
-          <span style="color:var(--muted);font-size:10px">S&P since: <span class="${spxClass}">${spxStr}</span></span>
-        </td>`;
-      }
+    // Performance since transaction: live price vs actual transaction price from spreadsheet
+    const perf = getPerfSinceTxn(t.ticker, t.price);
+    let perfCell;
+    if (perf === null) {
+      // Price not loaded yet — show spinner
+      perfCell = `<td style="text-align:right;color:var(--muted);font-size:11px">…</td>`;
+    } else {
+      const sign  = perf >= 0 ? '+' : '';
+      const cls   = isBuy
+        ? (perf >= 0 ? 'pos' : 'neg')          // buy: up = good
+        : (perf >= 0 ? 'neg' : 'pos');          // sell: up = bad (left money on table)
+      perfCell = `<td style="text-align:right;font-family:'JetBrains Mono',monospace">
+        <span class="${cls}" style="font-weight:700;font-size:14px">${sign}${perf.toFixed(1)}%</span>
+      </td>`;
     }
 
     return `<tr>
@@ -771,7 +783,7 @@ function showPage(name, btn) {
   document.getElementById('page-'+name).classList.add('active');
   btn?.classList.add('active');
   if (name==='analytics') renderAnalytics();
-  if (name==='transactions') renderTransactions();
+  if (name==='transactions') { renderTransactions(); fetchTxnPrices(); }
 }
 
 
