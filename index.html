@@ -84,14 +84,14 @@
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
   /* KPI */
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;}
-  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;
+  .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:32px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 16px;overflow:hidden;
     position:relative;overflow:hidden;transition:border-color 0.2s,transform 0.2s;}
   .kpi-card:hover{border-color:rgba(0,229,176,0.3);transform:translateY(-2px);}
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent-line,var(--accent));opacity:0.7;}
-  .kpi-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-  .kpi-value{font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:6px;}
-  .kpi-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+  .kpi-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;line-height:1.4;}
+  .kpi-value{font-size:clamp(16px,1.6vw,22px);font-weight:800;letter-spacing:-0.5px;line-height:1;margin-bottom:6px;white-space:nowrap;}
+  .kpi-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);line-height:1.4;}
 
   .pos{color:var(--positive);}.neg{color:var(--negative);}.neu{color:var(--neutral);}
 
@@ -202,7 +202,7 @@
   .ptog[data-key="rut"].active{color:#f97316;border-color:#f9731644;}
 
 
-  @media(max-width:900px){.charts-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}.dash-lower{grid-template-columns:1fr!important}}
+  @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:900px){.charts-grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:repeat(2,1fr)}.dash-lower{grid-template-columns:1fr!important}}
   ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 </style>
 <!-- last-updated: 2026-02-28 -->
@@ -255,7 +255,7 @@
   <div id="page-dashboard" class="page active">
     <div class="kpi-grid">
       <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Total Portfolio Value</div><div class="kpi-value" id="kv-total">—</div><div class="kpi-sub" id="ks-total">Fetching…</div></div>
-      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">P&amp;L (Current Positions)</div><div class="kpi-value" id="kv-pnl">—</div><div class="kpi-sub" id="ks-pnl">Unrealised · current holdings</div></div>
+      <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">P&amp;L · Open Positions</div><div class="kpi-value" id="kv-pnl">—</div><div class="kpi-sub">Unrealised · open only</div></div>
       <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Live Positions</div><div class="kpi-value" id="kv-cnt">—</div><div class="kpi-sub">Successfully priced</div></div>
       <div class="kpi-card" style="--accent-line:#ffd166"><div class="kpi-label">Portfolio Beta</div><div class="kpi-value neu" id="kv-beta">—</div><div class="kpi-sub" id="ks-beta">vs S&amp;P 500</div></div>
       <div class="kpi-card" style="--accent-line:#00e5b0"><div class="kpi-label">Sharpe Ratio</div><div class="kpi-value pos" id="kv-sharpe">—</div><div class="kpi-sub">Annualised · risk-free 5%</div></div>
