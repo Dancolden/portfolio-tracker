@@ -293,7 +293,7 @@
     <div style="margin-bottom:32px;">
       <div class="chart-card" style="overflow:hidden;">
         <div class="chart-title"><div class="dot"></div>Sector Allocation</div>
-        <canvas id="c-sector" height="420" style="width:100%;height:420px;max-height:420px;display:block;"></canvas>
+        <canvas id="c-sector" width="420" height="420" style="width:420px;height:420px;display:block;margin:0 auto;"></canvas>
       </div>
     </div>
   </div>
@@ -1039,7 +1039,7 @@ function renderDash() {
   const total = vals.reduce((a,b)=>a+b,0);
   CH.sec = new Chart(ctx1,{type:'doughnut',
     data:{labels:labs,datasets:[{data:vals,backgroundColor:cols.map(c=>c+'cc'),borderColor:cols,borderWidth:1.5,hoverOffset:8}]},
-    options:{responsive:false,maintainAspectRatio:false,cutout:'58%',
+    options:{responsive:false,maintainAspectRatio:true,cutout:'58%',
       plugins:{
         legend:{position:'right',labels:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:11},padding:16,boxWidth:12,usePointStyle:true}},
         tooltip:{callbacks:{label:c=>` ${c.label}: $${f$(c.raw,0)} (${(c.raw/total*100).toFixed(1)}%)`}},
