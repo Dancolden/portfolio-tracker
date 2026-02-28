@@ -349,18 +349,69 @@
 
   <!-- ANALYTICS -->
   <div id="page-analytics" class="page">
-    <div class="section-header"><div class="section-title">Portfolio Metrics</div></div>
-    <div class="metrics-grid" style="margin-bottom:32px;">
-      <div class="metric-card"><div class="metric-label">Beta</div><div class="metric-value neu">0.999</div><div class="metric-label" style="margin-top:4px">Market Sensitivity</div></div>
-      <div class="metric-card"><div class="metric-label">Alpha</div><div class="metric-value pos">0.40%</div><div class="metric-label" style="margin-top:4px">Excess Return</div></div>
-      <div class="metric-card"><div class="metric-label">Sharpe Ratio</div><div class="metric-value pos">0.941</div><div class="metric-label" style="margin-top:4px">Risk-Adjusted</div></div>
-      <div class="metric-card"><div class="metric-label">Live AUM</div><div class="metric-value pos" id="a-total">—</div><div class="metric-label" style="margin-top:4px">Total Value</div></div>
+
+    <!-- ── SECTION A: PERFORMANCE & RISK ───────────────────────────────── -->
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;">A — Performance &amp; Risk</div>
     </div>
-    <div class="charts-grid">
-      <div class="chart-card"><div class="chart-title"><div class="dot"></div>Sector Weights</div><canvas id="c-secbar" height="300"></canvas></div>
-      <div class="chart-card"><div class="chart-title"><div class="dot"></div>Return Distribution</div><canvas id="c-dist" height="300"></canvas></div>
-      <div class="chart-card wide"><div class="chart-title"><div class="dot"></div>Day Change Heatmap (Live)</div><div id="heatmap" style="display:flex;flex-wrap:wrap;gap:4px;padding:8px 0;"></div></div>
+
+    <!-- Row 1: Rolling 3-month returns + Drawdown -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot"></div>Rolling 3-Month Return — Portfolio vs S&amp;P 500</div>
+        <div style="position:relative;height:240px;"><canvas id="c-rolling"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot"></div>Drawdown from Peak</div>
+        <div style="position:relative;height:240px;"><canvas id="c-drawdown"></canvas></div>
+      </div>
     </div>
+
+    <!-- Row 2: Top 5 / Bottom 5 performers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;">
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot" style="background:#00e5b0"></div>Top 5 Performers</div>
+        <div id="top5" style="display:flex;flex-direction:column;gap:0;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot" style="background:#ff6b6b"></div>Bottom 5 Performers</div>
+        <div id="bot5" style="display:flex;flex-direction:column;gap:0;"></div>
+      </div>
+    </div>
+
+    <!-- ── SECTION B: PORTFOLIO CONSTRUCTION ───────────────────────────── -->
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title" style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-family:'JetBrains Mono',monospace;">B — Portfolio Construction</div>
+    </div>
+
+    <!-- Row 3: Concentration + Sector vs S&P benchmark -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot"></div>Concentration — Top 10 Holdings</div>
+        <div style="position:relative;height:260px;"><canvas id="c-conc"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot"></div>Sector Weights vs S&amp;P 500</div>
+        <div style="position:relative;height:260px;"><canvas id="c-secvspx"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Row 4: Cost basis ladder full width -->
+    <div style="margin-bottom:24px;">
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot"></div>Cost Basis Ladder — Current Price vs Avg Cost</div>
+        <div style="position:relative;height:300px;"><canvas id="c-ladder"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Row 5: Day Change Heatmap (keep the good one) -->
+    <div style="margin-bottom:24px;">
+      <div class="chart-card">
+        <div class="chart-title"><div class="dot"></div>Day Change Heatmap (Live)</div>
+        <div id="heatmap" style="display:flex;flex-wrap:wrap;gap:4px;padding:8px 0;"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- MANAGE -->
@@ -1158,24 +1209,202 @@ function renderH() {
 // ─────────────────────────────────────────────────────────────
 function renderAnalytics() {
   renderDash();
-  const sm=sectorMap(), tot=Object.values(sm).reduce((a,b)=>a+b,0), labs=Object.keys(sm), wts=labs.map(l=>sm[l]/tot*100);
-  const ctx1=document.getElementById('c-secbar').getContext('2d');
-  if(CH.sb) CH.sb.destroy();
-  CH.sb=new Chart(ctx1,{type:'bar',data:{labels:labs,datasets:[{data:wts,backgroundColor:labs.map(l=>sc(l)+'bb'),borderColor:labs.map(sc),borderWidth:1.5,borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:9},maxRotation:45},grid:{display:false},border:{color:'#232a35'}},
-              y:{ticks:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:10},callback:v=>v.toFixed(1)+'%'},grid:{color:'#1a1f27'},border:{color:'#232a35'}}}}});
 
-  const stk=H.filter(h=>h.priceOk&&h.ticker!=='CASH');
-  const bkts=['<-50%','-50→-20%','-20→0%','0→50%','50→200%','>200%'],cts=[0,0,0,0,0,0];
-  stk.forEach(h=>{const r=h.pctReturn*100;if(r<-50)cts[0]++;else if(r<-20)cts[1]++;else if(r<0)cts[2]++;else if(r<50)cts[3]++;else if(r<200)cts[4]++;else cts[5]++;});
-  const ctx2=document.getElementById('c-dist').getContext('2d');
-  if(CH.dist) CH.dist.destroy();
-  CH.dist=new Chart(ctx2,{type:'bar',data:{labels:bkts,datasets:[{data:cts,backgroundColor:['#ff6b6b99','#ff9a6c99','#ffd16699','rgba(0,229,176,0.4)','rgba(0,229,176,0.65)','rgba(0,229,176,0.9)'],borderColor:['#ff6b6b','#ff9a6c','#ffd166','#00e5b0','#00e5b0','#00e5b0'],borderWidth:1.5,borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:10}},grid:{display:false},border:{color:'#232a35'}},
-              y:{ticks:{color:'#6b7a92',font:{family:"'JetBrains Mono',monospace",size:10},stepSize:1},grid:{color:'#1a1f27'},border:{color:'#232a35'}}}}});
+  const FONT = "'JetBrains Mono',monospace";
+  const axisStyle = (sz=10) => ({color:'#6b7a92', font:{family:FONT,size:sz}});
+  const gridStyle = {color:'#1a1f27'};
+  const borderStyle = {color:'#232a35'};
+  const tooltipDefaults = {
+    backgroundColor:'#1a1f27', borderColor:'#232a35', borderWidth:1,
+    titleColor:'#e8edf5', bodyColor:'#6b7a92',
+    titleFont:{family:FONT,size:12}, bodyFont:{family:FONT,size:11}, padding:10
+  };
 
+  // ── A1: Rolling 3-month returns ──────────────────────────────────────────
+  (function() {
+    const WIN = 63; // ~3 months trading days
+    const dates=[], portRoll=[], spxRoll=[];
+    for(let i=WIN; i<DAILY_RETURNS.length; i++){
+      let cp=1, cs=1;
+      for(let j=i-WIN+1;j<=i;j++){cp*=(1+DAILY_RETURNS[j].p);cs*=(1+DAILY_RETURNS[j].s);}
+      dates.push(DAILY_RETURNS[i].date);
+      portRoll.push(+((cp-1)*100).toFixed(3));
+      spxRoll.push(+((cs-1)*100).toFixed(3));
+    }
+    const ctx=document.getElementById('c-rolling').getContext('2d');
+    if(CH.rolling) CH.rolling.destroy();
+    CH.rolling=new Chart(ctx,{type:'line',
+      data:{labels:dates,datasets:[
+        {label:'Portfolio',data:portRoll,borderColor:'#00e5b0',borderWidth:2,pointRadius:0,fill:false,tension:0.3},
+        {label:'S&P 500',data:spxRoll,borderColor:'#4ecdc4',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:0.3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:16}},
+          tooltip:{...tooltipDefaults,callbacks:{label:c=>' '+c.dataset.label+': '+(c.raw>=0?'+':'')+c.raw.toFixed(1)+'%'}},
+          datalabels:{display:false}},
+        scales:{
+          x:{ticks:{...axisStyle(9),maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{display:false},border:borderStyle},
+          y:{ticks:{...axisStyle(10),callback:v=>(v>=0?'+':'')+v.toFixed(0)+'%'},grid:gridStyle,border:borderStyle}
+        }
+      }
+    });
+  })();
+
+  // ── A2: Drawdown ─────────────────────────────────────────────────────────
+  (function() {
+    let peakP=100, peakS=100;
+    const dates=[], ddP=[], ddS=[];
+    PERF_DATA.forEach(d=>{
+      if(d.portfolio) peakP=Math.max(peakP,d.portfolio);
+      if(d.spx)       peakS=Math.max(peakS,d.spx);
+      dates.push(d.date);
+      ddP.push(d.portfolio ? +((d.portfolio/peakP-1)*100).toFixed(3) : null);
+      ddS.push(d.spx       ? +((d.spx/peakS-1)*100).toFixed(3)       : null);
+    });
+    const ctx=document.getElementById('c-drawdown').getContext('2d');
+    if(CH.dd) CH.dd.destroy();
+    CH.dd=new Chart(ctx,{type:'line',
+      data:{labels:dates,datasets:[
+        {label:'Portfolio',data:ddP,borderColor:'#ff6b6b',borderWidth:2,pointRadius:0,fill:true,
+         backgroundColor:'rgba(255,107,107,0.08)',tension:0.2},
+        {label:'S&P 500', data:ddS,borderColor:'#ffd166',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:0.2}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:16}},
+          tooltip:{...tooltipDefaults,callbacks:{label:c=>c.raw!=null?' '+c.dataset.label+': '+(c.raw.toFixed(1))+'%':''}},
+          datalabels:{display:false}},
+        scales:{
+          x:{ticks:{...axisStyle(9),maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{display:false},border:borderStyle},
+          y:{ticks:{...axisStyle(10),callback:v=>v.toFixed(0)+'%'},grid:gridStyle,border:borderStyle}
+        }
+      }
+    });
+  })();
+
+  // ── A3: Top 5 / Bottom 5 ─────────────────────────────────────────────────
+  (function() {
+    const stk = H.filter(h=>h.priceOk && h.ticker!=='CASH' && h.ticker!=='VTIP')
+      .map(h=>({ticker:h.ticker,name:h.name,pct:h.pctReturn*100,val:h.dollarReturn}))
+      .sort((a,b)=>b.pct-a.pct);
+    const top5=stk.slice(0,5), bot5=[...stk].reverse().slice(0,5);
+    function renderBar(el, items, isTop) {
+      const maxAbs=Math.max(...items.map(i=>Math.abs(i.pct)));
+      el.innerHTML=items.map((h,idx)=>{
+        const sign=h.pct>=0?'+':'';
+        const col=h.pct>=0?'#00e5b0':'#ff6b6b';
+        const barW=Math.abs(h.pct)/maxAbs*100;
+        const border=idx<items.length-1?'border-bottom:1px solid rgba(255,255,255,0.04);':'';
+        return `<div style="display:flex;align-items:center;gap:12px;padding:10px 4px;${border}">
+          <span style="font-family:${FONT};font-weight:700;font-size:13px;width:52px;flex-shrink:0">${h.ticker}</span>
+          <div style="flex:1;background:rgba(255,255,255,0.04);border-radius:4px;height:6px;overflow:hidden;">
+            <div style="width:${barW}%;height:100%;background:${col};border-radius:4px;"></div>
+          </div>
+          <span style="font-family:${FONT};font-size:13px;font-weight:700;color:${col};width:60px;text-align:right">${sign}${h.pct.toFixed(1)}%</span>
+          <span style="font-family:${FONT};font-size:11px;color:var(--muted);width:68px;text-align:right">${h.val>=0?'+':''}$${Math.round(Math.abs(h.val)).toLocaleString()}</span>
+        </div>`;
+      }).join('');
+    }
+    renderBar(document.getElementById('top5'), top5, true);
+    renderBar(document.getElementById('bot5'), bot5, false);
+  })();
+
+  // ── B1: Concentration — top 10 holdings ──────────────────────────────────
+  (function() {
+    const sorted = H.filter(h=>h.priceOk&&h.value>0).sort((a,b)=>b.value-a.value);
+    const total  = sorted.reduce((s,h)=>s+h.value,0);
+    const top10  = sorted.slice(0,10);
+    const rest   = sorted.slice(10).reduce((s,h)=>s+h.value,0);
+    const labels = [...top10.map(h=>h.ticker), rest>0?'Other':''].filter(Boolean);
+    const values = [...top10.map(h=>+(h.value/total*100).toFixed(2)), rest>0?+(rest/total*100).toFixed(2):0].filter((_,i)=>labels[i]);
+    const colors = top10.map(h=>sc(h.sector));
+    if(rest>0) colors.push('#6b7a92');
+    const ctx=document.getElementById('c-conc').getContext('2d');
+    if(CH.conc) CH.conc.destroy();
+    CH.conc=new Chart(ctx,{type:'bar',
+      data:{labels,datasets:[{data:values,backgroundColor:colors.map(c=>c+'cc'),borderColor:colors,borderWidth:1.5,borderRadius:4}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},
+          tooltip:{...tooltipDefaults,callbacks:{label:c=>` ${c.raw.toFixed(1)}% of portfolio`}},
+          datalabels:{display:false}},
+        scales:{
+          x:{ticks:{...axisStyle(10),callback:v=>v+'%'},grid:gridStyle,border:borderStyle,max:Math.ceil(Math.max(...values)/5)*5+5},
+          y:{ticks:{...axisStyle(10)},grid:{display:false},border:borderStyle}
+        }
+      }
+    });
+  })();
+
+  // ── B2: Sector vs S&P 500 benchmark weights ───────────────────────────────
+  (function() {
+    // Approximate S&P 500 sector weights (as of late 2025)
+    const spxWeights = {
+      'Information Technology': 31.5, 'Financials': 13.2, 'Health Care': 11.5,
+      'Consumer Discretionary': 10.8, 'Communication Services': 8.9, 'Industrials': 8.5,
+      'Consumer Staples': 5.6, 'Energy': 3.4, 'Utilities': 2.4,
+      'Real Estate': 2.2, 'Materials': 2.0, 'Cash and Cash Equivalents': 0
+    };
+    const sm=sectorMap(), tot=Object.values(sm).reduce((a,b)=>a+b,0);
+    const sectors=Object.keys(spxWeights).filter(s=>s!=='Cash and Cash Equivalents');
+    const portW=sectors.map(s=>+((sm[s]||0)/tot*100).toFixed(1));
+    const spxW =sectors.map(s=>spxWeights[s]||0);
+    const ctx=document.getElementById('c-secvspx').getContext('2d');
+    if(CH.secvspx) CH.secvspx.destroy();
+    CH.secvspx=new Chart(ctx,{type:'bar',
+      data:{labels:sectors.map(s=>s.replace('Information Technology','Info Tech').replace('Consumer Discretionary','Cons. Disc.').replace('Communication Services','Comm. Svcs').replace('Consumer Staples','Cons. Staples')),
+        datasets:[
+          {label:'Portfolio',data:portW,backgroundColor:'rgba(0,229,176,0.6)',borderColor:'#00e5b0',borderWidth:1.5,borderRadius:3},
+          {label:'S&P 500', data:spxW, backgroundColor:'rgba(107,122,146,0.3)',borderColor:'#6b7a92',borderWidth:1.5,borderRadius:3}
+        ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:12}},
+          tooltip:{...tooltipDefaults,callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toFixed(1)}%`}},
+          datalabels:{display:false}},
+        scales:{
+          x:{ticks:{...axisStyle(8),maxRotation:30},grid:{display:false},border:borderStyle},
+          y:{ticks:{...axisStyle(10),callback:v=>v+'%'},grid:gridStyle,border:borderStyle}
+        }
+      }
+    });
+  })();
+
+  // ── B3: Cost basis ladder ─────────────────────────────────────────────────
+  (function() {
+    const stk=H.filter(h=>h.priceOk&&h.ticker!=='CASH'&&h.avgCost>0&&h.price>0)
+      .sort((a,b)=>b.pctReturn-a.pctReturn);
+    const labels   = stk.map(h=>h.ticker);
+    const avgCosts = stk.map(h=>h.avgCost);
+    const prices   = stk.map(h=>h.price);
+    const barColors= stk.map(h=>h.price>=h.avgCost?'rgba(0,229,176,0.7)':'rgba(255,107,107,0.7)');
+    const borderC  = stk.map(h=>h.price>=h.avgCost?'#00e5b0':'#ff6b6b');
+    const ctx=document.getElementById('c-ladder').getContext('2d');
+    if(CH.ladder) CH.ladder.destroy();
+    CH.ladder=new Chart(ctx,{type:'bar',
+      data:{labels,datasets:[
+        {label:'Avg Cost',data:avgCosts,backgroundColor:'rgba(107,122,146,0.3)',borderColor:'#6b7a92',borderWidth:1,borderRadius:2,order:2},
+        {label:'Live Price',data:prices,backgroundColor:barColors,borderColor:borderC,borderWidth:1.5,borderRadius:2,order:1}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:12}},
+          tooltip:{...tooltipDefaults,callbacks:{
+            label:c=>{
+              const h=stk[c.dataIndex];
+              if(c.datasetIndex===0) return ` Avg cost: $${c.raw.toFixed(2)}`;
+              const pct=((h.price/h.avgCost-1)*100);
+              return ` Live: $${c.raw.toFixed(2)} (${pct>=0?'+':''}${pct.toFixed(1)}%)`;
+            }
+          }},
+          datalabels:{display:false}},
+        scales:{
+          x:{ticks:{...axisStyle(9),maxRotation:45},grid:{display:false},border:borderStyle},
+          y:{ticks:{...axisStyle(10),callback:v=>'$'+v.toLocaleString()},grid:gridStyle,border:borderStyle}
+        }
+      }
+    });
+  })();
+
+  // ── B4: Day Change Heatmap ────────────────────────────────────────────────
   const hm=H.filter(h=>h.dayChange!=null&&!isNaN(h.dayChange)).sort((a,b)=>b.dayChange-a.dayChange);
   document.getElementById('heatmap').innerHTML=hm.map(h=>{
     const pct=(h.dayChange*100).toFixed(2), inten=Math.min(Math.abs(h.dayChange)/0.05,1);
