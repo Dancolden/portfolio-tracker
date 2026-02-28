@@ -289,12 +289,19 @@
       </div>
     </div>
 
-    <!-- Sector allocation full width -->
-    <div style="margin-bottom:32px;">
+    <!-- Sector allocation + Recent transactions side by side -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;">
+
       <div class="chart-card" style="overflow:hidden;">
         <div class="chart-title"><div class="dot"></div>Sector Allocation</div>
         <canvas id="c-sector" width="420" height="420" style="width:420px;height:420px;display:block;margin:0 auto;"></canvas>
       </div>
+
+      <div class="chart-card" style="overflow:hidden;">
+        <div class="chart-title"><div class="dot"></div>Recent Transactions</div>
+        <div id="dash-txn-list" style="display:flex;flex-direction:column;gap:0;"></div>
+      </div>
+
     </div>
   </div>
 
@@ -657,7 +664,49 @@ const fp  = n => (n==null||isNaN(n)) ? '—' : (n>=0?'+':'')+(n*100).toFixed(2)+
 // ─────────────────────────────────────────────────────────────
 // RENDER ALL
 // ─────────────────────────────────────────────────────────────
-function renderAll() { renderDash(); renderH(); renderMgr(); fetchTxnPrices(); }
+function renderDashTxns() {
+  const el = document.getElementById('dash-txn-list');
+  if (!el) return;
+  // Show last 8 transactions (most recent first)
+  const recent = [...TRANSACTION_DATA].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 8);
+  el.innerHTML = recent.map((t, i) => {
+    const isBuy  = t.action === 'BUY';
+    const name   = COMPANY_NAMES[t.ticker] || t.ticker;
+    const priceStr = t.price ? '$' + t.price.toFixed(2) : '—';
+    const valueStr = t.price ? '$' + (t.change * t.price).toLocaleString('en-US', {maximumFractionDigits:0}) : '—';
+    const accentCol = isBuy ? 'var(--pos,#00e5b0)' : '#ff6b6b';
+    const actionLabel = isBuy ? '▲ BUY' : '▼ SELL';
+
+    // Performance since txn
+    const perf = getPerfSinceTxn(t.ticker, t.price);
+    let perfStr = '';
+    if (perf !== null) {
+      const sign = perf >= 0 ? '+' : '';
+      const cls  = isBuy ? (perf >= 0 ? '#00e5b0' : '#ff6b6b') : (perf >= 0 ? '#ff6b6b' : '#00e5b0');
+      perfStr = `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:${cls}">${sign}${perf.toFixed(1)}%</span>`;
+    }
+
+    const border = i < recent.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.04);' : '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 4px;${border}">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:10px;font-weight:700;letter-spacing:0.05em;color:${accentCol};width:44px">${actionLabel}</span>
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px">${t.ticker}</span>
+            <span style="color:var(--muted);font-size:11px">${t.change.toLocaleString()} shares @ ${priceStr}</span>
+          </div>
+          <div style="color:var(--muted);font-size:11px;margin-top:2px">${t.date} · ${name}</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600">${valueStr}</div>
+        <div style="margin-top:2px">${perfStr}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll() { renderDash(); renderH(); renderMgr(); renderDashTxns(); fetchTxnPrices(); }
 
 // ─────────────────────────────────────────────────────────────
 // NAV
@@ -689,6 +738,7 @@ async function fetchTxnPrices() {
   }));
 
   renderTransactions(); // re-render now that cache is populated
+  renderDashTxns();      // update perf % on dashboard too
 }
 
 function getPerfSinceTxn(ticker, txnPrice) {
