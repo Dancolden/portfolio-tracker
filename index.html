@@ -142,6 +142,9 @@
   .chart-title{font-size:13px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
   .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);}
 
+  .idx-btn{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.5px;padding:4px 8px;cursor:pointer;transition:all .15s;}
+  .idx-btn:hover{border-color:rgba(0,229,176,0.4);color:#e8edf5;}
+  .idx-btn.active{background:rgba(0,229,176,0.12);border-color:var(--accent);color:var(--accent);}
   .range-btn {
     background: transparent;
     border: 1px solid var(--border);
@@ -358,7 +361,15 @@
     <!-- Row 1: Rolling 3-month returns + Drawdown -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
       <div class="chart-card">
-        <div class="chart-title"><div class="dot"></div>Rolling 3-Month Return — Portfolio vs S&amp;P 500</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div class="chart-title" style="margin-bottom:0"><div class="dot"></div><span id="rolling-title">Rolling 3-Month Return — Portfolio vs S&amp;P 500</span></div>
+          <div style="display:flex;gap:4px;">
+            <button class="idx-btn active" data-chart="rolling" data-key="spx" onclick="setIdxToggle(this)">S&amp;P 500</button>
+            <button class="idx-btn" data-chart="rolling" data-key="nasdaq" onclick="setIdxToggle(this)">Nasdaq</button>
+            <button class="idx-btn" data-chart="rolling" data-key="dji" onclick="setIdxToggle(this)">DJIA</button>
+            <button class="idx-btn" data-chart="rolling" data-key="rut" onclick="setIdxToggle(this)">Russell</button>
+          </div>
+        </div>
         <div style="position:relative;height:240px;"><canvas id="c-rolling"></canvas></div>
       </div>
       <div class="chart-card">
@@ -391,7 +402,15 @@
         <div style="position:relative;height:260px;"><canvas id="c-conc"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title"><div class="dot"></div>Sector Weights vs S&amp;P 500</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div class="chart-title" style="margin-bottom:0"><div class="dot"></div><span id="secvspx-title">Sector Weights vs S&amp;P 500</span></div>
+          <div style="display:flex;gap:4px;">
+            <button class="idx-btn active" data-chart="secvspx" data-key="spx" onclick="setIdxToggle(this)">S&amp;P 500</button>
+            <button class="idx-btn" data-chart="secvspx" data-key="nasdaq" onclick="setIdxToggle(this)">Nasdaq</button>
+            <button class="idx-btn" data-chart="secvspx" data-key="dji" onclick="setIdxToggle(this)">DJIA</button>
+            <button class="idx-btn" data-chart="secvspx" data-key="rut" onclick="setIdxToggle(this)">Russell</button>
+          </div>
+        </div>
         <div style="position:relative;height:260px;"><canvas id="c-secvspx"></canvas></div>
       </div>
     </div>
@@ -1207,6 +1226,149 @@ function renderH() {
 // ─────────────────────────────────────────────────────────────
 // ANALYTICS
 // ─────────────────────────────────────────────────────────────
+// Index metadata for toggles
+const IDX_META = {
+  spx:    {label:"S&P 500",  key:"spx",    color:"#4ecdc4"},
+  nasdaq: {label:"Nasdaq",   key:"nasdaq",  color:"#ffd166"},
+  dji:    {label:"DJIA",     key:"dji",     color:"#a78bfa"},
+  rut:    {label:"Russell 2000", key:"rut", color:"#f97316"},
+};
+
+function setIdxToggle(btn) {
+  const chart = btn.dataset.chart;
+  const key   = btn.dataset.key;
+  // deactivate siblings
+  btn.closest('div').querySelectorAll('.idx-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if (chart === 'rolling')   buildRollingChart(key);
+  if (chart === 'secvspx')   buildSecVsIdxChart(key);
+}
+
+function buildRollingChart(idxKey) {
+  const FONT = "'JetBrains Mono',monospace";
+  const axisStyle = (sz=10) => ({color:'#6b7a92', font:{family:FONT,size:sz}});
+  const gridStyle = {color:'#1a1f27'}, borderStyle = {color:'#232a35'};
+  const tooltipDefaults = {backgroundColor:'#1a1f27',borderColor:'#232a35',borderWidth:1,
+    titleColor:'#e8edf5',bodyColor:'#6b7a92',titleFont:{family:FONT,size:12},bodyFont:{family:FONT,size:11},padding:10};
+  const meta = IDX_META[idxKey];
+  const WIN = 63;
+  const keyMap = {spx:'s', nasdaq:'n', dji:'d', rut:'r'};
+
+  // DAILY_RETURNS has p (portfolio) and s (spx). For other indexes, compute from PERF_DATA
+  const idxDaily = [];
+  if (idxKey === 'spx') {
+    DAILY_RETURNS.forEach(d => idxDaily.push(d.s));
+  } else {
+    // Derive daily returns from PERF_DATA indexed series
+    const col = idxKey; // 'nasdaq','dji','rut'
+    for (let i=1; i<PERF_DATA.length; i++) {
+      const prev = PERF_DATA[i-1][col], curr = PERF_DATA[i][col];
+      idxDaily.push((prev && curr) ? curr/prev - 1 : 0);
+    }
+    idxDaily.unshift(0); // pad first entry
+  }
+
+  const dates=[], portRoll=[], idxRoll=[];
+  for(let i=WIN; i<DAILY_RETURNS.length; i++){
+    let cp=1, ci=1;
+    for(let j=i-WIN+1;j<=i;j++){
+      cp *= (1+DAILY_RETURNS[j].p);
+      ci *= (1+(idxDaily[j]||0));
+    }
+    dates.push(DAILY_RETURNS[i].date);
+    portRoll.push(+((cp-1)*100).toFixed(3));
+    idxRoll.push(+((ci-1)*100).toFixed(3));
+  }
+
+  // Update title
+  const titleEl = document.getElementById('rolling-title');
+  if(titleEl) titleEl.textContent = `Rolling 3-Month Return — Portfolio vs ${meta.label}`;
+
+  const ctx=document.getElementById('c-rolling').getContext('2d');
+  if(CH.rolling) CH.rolling.destroy();
+  CH.rolling=new Chart(ctx,{type:'line',
+    data:{labels:dates,datasets:[
+      {label:'Portfolio',data:portRoll,borderColor:'#00e5b0',borderWidth:2,pointRadius:0,fill:false,tension:0.3},
+      {label:meta.label,data:idxRoll,borderColor:meta.color,borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:0.3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:16}},
+        tooltip:{...tooltipDefaults,callbacks:{label:c=>' '+c.dataset.label+': '+(c.raw>=0?'+':'')+c.raw.toFixed(1)+'%'}},
+        datalabels:{display:false}},
+      scales:{
+        x:{ticks:{...axisStyle(9),maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{display:false},border:borderStyle},
+        y:{ticks:{...axisStyle(10),callback:v=>(v>=0?'+':'')+v.toFixed(0)+'%'},grid:gridStyle,border:borderStyle}
+      }
+    }
+  });
+}
+
+function buildSecVsIdxChart(idxKey) {
+  const FONT = "'JetBrains Mono',monospace";
+  const axisStyle = (sz=10) => ({color:'#6b7a92', font:{family:FONT,size:sz}});
+  const gridStyle = {color:'#1a1f27'}, borderStyle = {color:'#232a35'};
+  const tooltipDefaults = {backgroundColor:'#1a1f27',borderColor:'#232a35',borderWidth:1,
+    titleColor:'#e8edf5',bodyColor:'#6b7a92',titleFont:{family:FONT,size:12},bodyFont:{family:FONT,size:11},padding:10};
+  const meta = IDX_META[idxKey];
+
+  // Approximate sector weights for each index (late 2025)
+  const BENCH_WEIGHTS = {
+    spx: {
+      'Information Technology':31.5,'Financials':13.2,'Health Care':11.5,
+      'Consumer Discretionary':10.8,'Communication Services':8.9,'Industrials':8.5,
+      'Consumer Staples':5.6,'Energy':3.4,'Utilities':2.4,'Real Estate':2.2,'Materials':2.0
+    },
+    nasdaq: {
+      'Information Technology':50.2,'Communication Services':16.4,'Consumer Discretionary':13.8,
+      'Health Care':6.2,'Industrials':4.8,'Financials':3.1,
+      'Consumer Staples':2.1,'Energy':0.6,'Utilities':0.5,'Real Estate':0.4,'Materials':0.3
+    },
+    dji: {
+      'Information Technology':22.1,'Financials':18.4,'Health Care':14.2,
+      'Consumer Discretionary':11.5,'Industrials':15.3,'Consumer Staples':7.8,
+      'Energy':4.2,'Communication Services':3.8,'Materials':2.1,'Utilities':0.6,'Real Estate':0.0
+    },
+    rut: {
+      'Financials':18.5,'Health Care':16.2,'Industrials':17.8,'Information Technology':12.4,
+      'Consumer Discretionary':10.2,'Energy':5.8,'Real Estate':6.3,'Materials':4.1,
+      'Consumer Staples':3.2,'Communication Services':2.9,'Utilities':2.6
+    }
+  };
+
+  const weights = BENCH_WEIGHTS[idxKey];
+  const sm=sectorMap(), tot=Object.values(sm).reduce((a,b)=>a+b,0);
+  const sectors=Object.keys(weights);
+  const portW=sectors.map(s=>+((sm[s]||0)/tot*100).toFixed(1));
+  const idxW =sectors.map(s=>weights[s]||0);
+
+  // Update title
+  const titleEl = document.getElementById('secvspx-title');
+  if(titleEl) titleEl.textContent = `Sector Weights vs ${meta.label}`;
+
+  const ctx=document.getElementById('c-secvspx').getContext('2d');
+  if(CH.secvspx) CH.secvspx.destroy();
+  const shortLabel = s => s.replace('Information Technology','Info Tech')
+    .replace('Consumer Discretionary','Cons. Disc.').replace('Communication Services','Comm. Svcs')
+    .replace('Consumer Staples','Cons. Staples');
+  CH.secvspx=new Chart(ctx,{type:'bar',
+    data:{labels:sectors.map(shortLabel),
+      datasets:[
+        {label:'Portfolio',data:portW,backgroundColor:'rgba(0,229,176,0.6)',borderColor:'#00e5b0',borderWidth:1.5,borderRadius:3},
+        {label:meta.label, data:idxW, backgroundColor:meta.color+'44',borderColor:meta.color,borderWidth:1.5,borderRadius:3}
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:12}},
+        tooltip:{...tooltipDefaults,callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toFixed(1)}%`}},
+        datalabels:{display:false}},
+      scales:{
+        x:{ticks:{...axisStyle(8),maxRotation:30},grid:{display:false},border:borderStyle},
+        y:{ticks:{...axisStyle(10),callback:v=>v+'%'},grid:gridStyle,border:borderStyle}
+      }
+    }
+  });
+}
+
 function renderAnalytics() {
   renderDash();
 
@@ -1221,35 +1383,7 @@ function renderAnalytics() {
   };
 
   // ── A1: Rolling 3-month returns ──────────────────────────────────────────
-  (function() {
-    const WIN = 63; // ~3 months trading days
-    const dates=[], portRoll=[], spxRoll=[];
-    for(let i=WIN; i<DAILY_RETURNS.length; i++){
-      let cp=1, cs=1;
-      for(let j=i-WIN+1;j<=i;j++){cp*=(1+DAILY_RETURNS[j].p);cs*=(1+DAILY_RETURNS[j].s);}
-      dates.push(DAILY_RETURNS[i].date);
-      portRoll.push(+((cp-1)*100).toFixed(3));
-      spxRoll.push(+((cs-1)*100).toFixed(3));
-    }
-    const ctx=document.getElementById('c-rolling').getContext('2d');
-    if(CH.rolling) CH.rolling.destroy();
-    CH.rolling=new Chart(ctx,{type:'line',
-      data:{labels:dates,datasets:[
-        {label:'Portfolio',data:portRoll,borderColor:'#00e5b0',borderWidth:2,pointRadius:0,fill:false,tension:0.3},
-        {label:'S&P 500',data:spxRoll,borderColor:'#4ecdc4',borderWidth:1.5,borderDash:[4,4],pointRadius:0,fill:false,tension:0.3}
-      ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        interaction:{mode:'index',intersect:false},
-        plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:16}},
-          tooltip:{...tooltipDefaults,callbacks:{label:c=>' '+c.dataset.label+': '+(c.raw>=0?'+':'')+c.raw.toFixed(1)+'%'}},
-          datalabels:{display:false}},
-        scales:{
-          x:{ticks:{...axisStyle(9),maxRotation:0,autoSkip:true,maxTicksLimit:8},grid:{display:false},border:borderStyle},
-          y:{ticks:{...axisStyle(10),callback:v=>(v>=0?'+':'')+v.toFixed(0)+'%'},grid:gridStyle,border:borderStyle}
-        }
-      }
-    });
-  })();
+  buildRollingChart('spx');
 
   // ── A2: Drawdown ─────────────────────────────────────────────────────────
   (function() {
@@ -1336,38 +1470,8 @@ function renderAnalytics() {
     });
   })();
 
-  // ── B2: Sector vs S&P 500 benchmark weights ───────────────────────────────
-  (function() {
-    // Approximate S&P 500 sector weights (as of late 2025)
-    const spxWeights = {
-      'Information Technology': 31.5, 'Financials': 13.2, 'Health Care': 11.5,
-      'Consumer Discretionary': 10.8, 'Communication Services': 8.9, 'Industrials': 8.5,
-      'Consumer Staples': 5.6, 'Energy': 3.4, 'Utilities': 2.4,
-      'Real Estate': 2.2, 'Materials': 2.0, 'Cash and Cash Equivalents': 0
-    };
-    const sm=sectorMap(), tot=Object.values(sm).reduce((a,b)=>a+b,0);
-    const sectors=Object.keys(spxWeights).filter(s=>s!=='Cash and Cash Equivalents');
-    const portW=sectors.map(s=>+((sm[s]||0)/tot*100).toFixed(1));
-    const spxW =sectors.map(s=>spxWeights[s]||0);
-    const ctx=document.getElementById('c-secvspx').getContext('2d');
-    if(CH.secvspx) CH.secvspx.destroy();
-    CH.secvspx=new Chart(ctx,{type:'bar',
-      data:{labels:sectors.map(s=>s.replace('Information Technology','Info Tech').replace('Consumer Discretionary','Cons. Disc.').replace('Communication Services','Comm. Svcs').replace('Consumer Staples','Cons. Staples')),
-        datasets:[
-          {label:'Portfolio',data:portW,backgroundColor:'rgba(0,229,176,0.6)',borderColor:'#00e5b0',borderWidth:1.5,borderRadius:3},
-          {label:'S&P 500', data:spxW, backgroundColor:'rgba(107,122,146,0.3)',borderColor:'#6b7a92',borderWidth:1.5,borderRadius:3}
-        ]},
-      options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{position:'top',labels:{color:'#6b7a92',font:{family:FONT,size:10},boxWidth:12,padding:12}},
-          tooltip:{...tooltipDefaults,callbacks:{label:c=>` ${c.dataset.label}: ${c.raw.toFixed(1)}%`}},
-          datalabels:{display:false}},
-        scales:{
-          x:{ticks:{...axisStyle(8),maxRotation:30},grid:{display:false},border:borderStyle},
-          y:{ticks:{...axisStyle(10),callback:v=>v+'%'},grid:gridStyle,border:borderStyle}
-        }
-      }
-    });
-  })();
+  // ── B2: Sector vs index benchmark weights ─────────────────────────────────
+  buildSecVsIdxChart('spx');
 
   // ── B3: Cost basis ladder ─────────────────────────────────────────────────
   (function() {
