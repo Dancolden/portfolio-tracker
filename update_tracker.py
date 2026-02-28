@@ -157,29 +157,75 @@ def extract_transactions(wb):
     headers = list(rows[0])
     tickers = headers[5:]
 
-    prev_shares = {}
-    transactions = []
-
+    # Build list of (date_str, row) tuples for all data rows
+    dated_rows = []
     for row in rows[1:]:
         date = row[0]
         if not hasattr(date, 'strftime'): continue
-        date_str = date.strftime('%Y-%m-%d')
+        dated_rows.append((date.strftime('%Y-%m-%d'), row))
+
+    prev_shares = {}   # ticker -> last known share count
+    last_seen   = {}   # ticker -> last date it appeared with > 0 shares
+    transactions = []
+
+    for date_str, row in dated_rows:
         for col_i, ticker in enumerate(tickers, start=5):
             if ticker is None or ticker == 'CASH': continue
-            shares = row[col_i]
-            if not isinstance(shares, (int, float)): continue
-            prev = prev_shares.get(ticker)
-            if prev is None and shares > 0:
-                price = get_price(ticker, date_str)
-                transactions.append({'date': date_str, 'action': 'BUY', 'ticker': ticker,
-                                      'change': shares, 'prev': 0, 'new': shares, 'price': price})
-            elif prev is not None and abs(shares - prev) > 0.01:
-                change = shares - prev
-                price = get_price(ticker, date_str)
-                transactions.append({'date': date_str, 'action': 'BUY' if change > 0 else 'SELL',
-                                      'ticker': ticker, 'change': abs(change), 'prev': prev,
-                                      'new': shares, 'price': price})
-            prev_shares[ticker] = shares
+            raw = row[col_i]
+
+            if isinstance(raw, (int, float)):
+                shares = float(raw)
+                prev = prev_shares.get(ticker)
+
+                if prev is None and shares > 0:
+                    # New position opened
+                    price = get_price(ticker, date_str)
+                    transactions.append({'date': date_str, 'action': 'BUY', 'ticker': ticker,
+                                         'change': shares, 'prev': 0, 'new': shares, 'price': price})
+                elif prev is not None and abs(shares - prev) > 0.01:
+                    # Share count changed (partial buy or sell)
+                    change = shares - prev
+                    price = get_price(ticker, date_str)
+                    transactions.append({'date': date_str, 'action': 'BUY' if change > 0 else 'SELL',
+                                         'ticker': ticker, 'change': abs(change), 'prev': prev,
+                                         'new': shares, 'price': price})
+
+                prev_shares[ticker] = shares
+                if shares > 0:
+                    last_seen[ticker] = date_str
+
+            else:
+                # Cell is blank — if ticker had shares, it was fully sold on the NEXT trading day
+                # We record this below after we know what the next date is
+                pass
+
+    # Second pass: detect full exits (ticker disappears from sheet before end)
+    # For each ticker that was held at inception, check if it stopped appearing
+    all_dates = [d for d, _ in dated_rows]
+    last_sheet_date = all_dates[-1]
+
+    for col_i, ticker in enumerate(tickers, start=5):
+        if ticker is None or ticker == 'CASH': continue
+        if ticker not in last_seen: continue
+        last_date = last_seen[ticker]
+        if last_date >= last_sheet_date: continue  # still active
+
+        # Find the next trading day after last_seen — that's the sell date
+        last_idx = all_dates.index(last_date)
+        if last_idx + 1 >= len(all_dates): continue
+        sell_date = all_dates[last_idx + 1]
+
+        # Only record if not already captured as a partial sell on that date
+        already = any(t['ticker'] == ticker and t['date'] == sell_date and t['action'] == 'SELL'
+                      for t in transactions)
+        if already: continue
+
+        sold_shares = prev_shares.get(ticker, 0)
+        if sold_shares <= 0: continue
+
+        price = get_price(ticker, sell_date)
+        transactions.append({'date': sell_date, 'action': 'SELL', 'ticker': ticker,
+                              'change': sold_shares, 'prev': sold_shares, 'new': 0, 'price': price})
 
     # Exclude inception positions (May 13 2024 = legacy holdings, not club transactions)
     transactions = [t for t in transactions if t['date'] != '2024-05-13']
